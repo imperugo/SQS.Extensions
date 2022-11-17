@@ -22,9 +22,11 @@ jobs:
             6.0.x
             7.0.x
 
+      - name: Show dotnet info
+        run: dotnet --info
+
       - name: Unit Test
-      - run: dotnet --info
-      - run: dotnet test --verbosity quiet
+        run: dotnet test --verbosity quiet
 
       - name: Build with dotnet
         run: ./NuGetPack.bat
