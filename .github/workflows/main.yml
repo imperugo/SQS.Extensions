@@ -28,7 +28,6 @@ jobs:
 
       - name: Build with dotnet
         run: dotnet pack ./src/AWSSDK.SQS.Extensions/AWSSDK.SQS.Extensions.csproj -o ./packages/ -c Release
-        shell: bash
 
       - name: Publish nuget
         run: |

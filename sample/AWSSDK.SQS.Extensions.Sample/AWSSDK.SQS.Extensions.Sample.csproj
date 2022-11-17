@@ -2,18 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.2" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\AWSSDK.SQS.Extensions\AWSSDK.SQS.Extensions.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <_ContentIncludedByDefault Remove="Pages\Error.cshtml" />
     <_ContentIncludedByDefault Remove="Pages\Index.cshtml" />
