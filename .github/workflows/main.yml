@@ -27,7 +27,7 @@ jobs:
         run: dotnet test --verbosity quiet
 
       - name: Build with dotnet
-        run: dotnet pack ./src/SQS.Extensions.Sample/SQS.Extensions.Sample.csproj -o ./packages/ -c Release
+        run: dotnet pack ./src/SQS.Extensions/SQS.Extensions.csproj -o ./packages/ -c Release
 
       - name: Publish nuget
         run: |

@@ -7,12 +7,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d41ce9a9-a1db-4fde-87cc-fa2e33a945f0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/AWSSDK.SQS.Extensions.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/AWSSDK.SQS.Extensions.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/Implementations/SqsDispatcher.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/Implementations/SqsDispatcher.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/Implementations/SqsMessagePump.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/Implementations/SqsMessagePump.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/Serialization/Json/Converters/DateOnlyConverter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/Serialization/Json/Converters/DateOnlyConverter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/Serialization/Json/Converters/DateOnlyNullableConverter.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/Serialization/Json/Converters/DateOnlyNullableConverter.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/Serialization/Json/SerializationOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/AWSSDK.SQS.Extensions/Serialization/Json/SerializationOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/main.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/main.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,6 +15,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/src/SQS.Extensions/Extensions/ServiceCollectionExtensions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/87341af91e7d4430be5cbfea5ad33c2f1f8a0/26/3d118f87/Message.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/87341af91e7d4430be5cbfea5ad33c2f1f8a0/55/7ffd28df/ReceiveMessageRequest.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/87341af91e7d4430be5cbfea5ad33c2f1f8a0/62/1fd5fa72/SendMessageRequest.cs" root0="SKIP_HIGHLIGHTING" />
@@ -118,6 +114,7 @@
       <workItem from="1668694864299" duration="2715000" />
       <workItem from="1668699104265" duration="1590000" />
       <workItem from="1668701205250" duration="10869000" />
+      <workItem from="1668722026094" duration="389000" />
     </task>
     <servers />
   </component>
