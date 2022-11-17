@@ -13,7 +13,7 @@
     <PackageProjectUrl>https://github.com/imperugo/AWSSDK.SQS.Extensions</PackageProjectUrl>
     <PackageId>AWSSDK.SQS.Extensions</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageLicenseUrl>https://github.com/imperugo/AWSSDK.SQS.Extensions/blob/main/LICENSE</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageTags>AWS SQS Queue Helper Extensions</PackageTags>
     <PackageIcon>logo.png</PackageIcon>
     <PackageIconUrl>https://github.com/imperugo/AWSSDK.SQS.Extensions/blob/main/docs/static/images/logo.png?raw=true</PackageIconUrl>
@@ -32,6 +32,7 @@
   <!-- This ensures the library will be packaged as a source generator when we use `dotnet pack` -->
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="\" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="\" />
     <None Include="../../docs/static/images/logo.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
