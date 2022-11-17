@@ -2,8 +2,6 @@
 <Project>
 
   <PropertyGroup>
-    <Company>Tico srl</Company>
-    <Copyright>Tico srl</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory).ruleset</CodeAnalysisRuleSet>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

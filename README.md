@@ -1,10 +1,10 @@
-# AWSSDK.SQS.Extensions
+# AWS.SDK.SQS.Extensions
 
-[![Nuget](https://img.shields.io/nuget/v/AWSSDK.SQS.Extensions?style=flat-square)](https://www.nuget.org/packages/AWSSDK.SQS.Extensions/)
-[![Nuget](https://img.shields.io/nuget/vpre/AWSSDK.SQS.Extensions?style=flat-square)](https://www.nuget.org/packages/AWSSDK.SQS.Extensions/)
-[![GitHub](https://img.shields.io/github/license/imperugo/AWSSDK.SQS.Extensions?style=flat-square)](https://github.com/imperugo/AWSSDK.SQS.Extensions/blob/main/LICENSE)
+[![Nuget](https://img.shields.io/nuget/v/AWS.SDK.SQS.Extensions?style=flat-square)](https://www.nuget.org/packages/AWS.SDK.SQS.Extensions/)
+[![Nuget](https://img.shields.io/nuget/vpre/AWS.SDK.SQS.Extensions?style=flat-square)](https://www.nuget.org/packages/AWS.SDK.SQS.Extensions/)
+[![GitHub](https://img.shields.io/github/license/imperugo/AWS.SDK.SQS.Extensions?style=flat-square)](https://github.com/imperugo/AWS.SDK.SQS.Extensions/blob/main/LICENSE)
 
-AWSSDK.SQS.Extensions is a .NET library with the idea to helps developer using AWS Sqs.
+AWS.SDK.SQS.Extensions is a .NET library with the idea to helps developer using AWS Sqs.
 
 Behind the scenes it covers a set of repetitive tasks, handle complexity and highly customizable.
 
@@ -15,7 +15,7 @@ Behind the scenes it covers a set of repetitive tasks, handle complexity and hig
 Add the NuGet Package to your project:
 
 ```bash
-dotnet add package AWSSDK.SQS.Extensions
+dotnet add package AWS.SDK.SQS.Extensions
 ```
 
 ### Configuration
@@ -173,16 +173,16 @@ builder.Services.AddSqsConsumerWithCustomQueueHeper<MySqsQueueHelper>(
 
 ## Sample
 
-Take a look [here](https://github.com/imperugo/AWSSDK.SQS.Extensions/blob/main/sample/AWSSDK.SQS.Extensions.Sample****)
+Take a look [here](https://github.com/imperugo/AWS.SDK.SQS.Extensions/blob/main/sample/AWS.SDK.SQS.Extensions.Sample****)
 
 ## License
 
-AWSSDK.SQS.Extensions [MIT](https://github.com/imperugo/AWSSDK.SQS.Extensions/blob/main/LICENSE) licensed.
+AWS.SDK.SQS.Extensions [MIT](https://github.com/imperugo/AWS.SDK.SQS.Extensions/blob/main/LICENSE) licensed.
 
 ### Contributing
 
 Thanks to all the people who already contributed!
 
-<a href="https://github.com/imperugo/AWSSDK.SQS.Extensions/graphs/contributors">
-  <img src="https://contributors-img.web.app/image?repo=imperugo/AWSSDK.SQS.Extensions" />
+<a href="https://github.com/imperugo/AWS.SDK.SQS.Extensions/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=imperugo/AWS.SDK.SQS.Extensions" />
 </a>

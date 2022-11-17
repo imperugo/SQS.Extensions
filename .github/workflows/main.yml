@@ -1,4 +1,4 @@
-name: AWSSDK.SQS.Extensions Build
+name: AWS.SDK.SQS.Extensions Build
 on:
   push:
     branches:
@@ -27,7 +27,7 @@ jobs:
         run: dotnet test --verbosity quiet
 
       - name: Build with dotnet
-        run: dotnet pack ./src/AWSSDK.SQS.Extensions/AWSSDK.SQS.Extensions.csproj -o ./packages/ -c Release
+        run: dotnet pack ./src/AWS.SDK.SQS.Extensions/AWS.SDK.SQS.Extensions.csproj -o ./packages/ -c Release
 
       - name: Publish nuget
         run: |
