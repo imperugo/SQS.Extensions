@@ -8,7 +8,7 @@ on:
 jobs:
   publish:
     name: Publish Nuget Packages
-    runs-on: windows-2019
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Setup dotnet
