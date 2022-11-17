@@ -8,14 +8,25 @@ namespace AWSSDK.SQS.Extensions.Configurations;
 public sealed record class AwsConfiguration
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="AwsConfiguration"/> class.
+    /// </summary>
+    /// <param name="region">The AWS Region.</param>
+    /// <param name="accountId">The AWS Account Identifier</param>
+    public AwsConfiguration(string region, string accountId)
+    {
+        Region = region;
+        AccountId = accountId;
+    }
+
+    /// <summary>
     ///     The AWS Region
     /// </summary>
-    public required string Region { get; init; }
+    public string Region { get; }
 
     /// <summary>
     ///     The AWS Account Identifier
     /// </summary>
-    public required string AccountId { get; init; }
+    public string AccountId { get;  }
 
     /// <summary>
     ///     The prefix to use for the queue name
@@ -31,5 +42,5 @@ public sealed record class AwsConfiguration
     /// <example>
     ///     my_queue_name-develop
     /// </example>
-    public string? QueueSuffix { get; init; }
+    public string? QueueSuffix { get; set; }
 }

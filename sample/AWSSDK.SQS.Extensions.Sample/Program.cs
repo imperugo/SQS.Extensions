@@ -14,10 +14,8 @@ builder.Services.AddDefaultAWSOptions(new AWSOptions { Region = RegionEndpoint.E
 builder.Services.AddAWSService<IAmazonSQS>();
 
 // Configuration
-builder.Services.AddSqsConsumerServices(() => new AwsConfiguration()
+builder.Services.AddSqsConsumerServices(() => new AwsConfiguration(region: "eu-central-1", accountId: "775704350706")
 {
-    Region = "eu-central-1",
-    AccountId = "775704350706",
     QueuePrefix = "develop-"
 });
 

@@ -26,8 +26,11 @@ internal static class SerializationOptions
             options.Converters.Add(new CultureCustomConverter());
             options.Converters.Add(new TimezoneCustomConverter());
             options.Converters.Add(new TimeSpanConverter());
+
+#if NET6 || NET7
             options.Converters.Add(new DateOnlyConverter());
             options.Converters.Add(new DateOnlyNullableConverter());
+#endif
             options.Converters.Add(new JsonStringEnumConverter(null, false));
 
             return options;

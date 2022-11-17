@@ -29,9 +29,8 @@ public class SqsMessagePumpTests : IAsyncDisposable
         loggerMock = new Mock<ILogger>();
         sqsQueueHelperMock = new Mock<ISqsQueueHelper>();
         messageSerializerMock = new Mock<IMessageSerializer>();
-        configuration = new MessagePumpConfiguration()
+        configuration = new MessagePumpConfiguration("my-super-queue")
         {
-            QueueName = "my-super-queue",
             MaxConcurrentOperation = 10
         };
 

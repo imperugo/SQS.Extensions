@@ -18,6 +18,8 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     private readonly MessagePumpConfiguration configuration;
     private readonly IMessageSerializer messageSerializer;
 
+    public static readonly DateTime UnixEpoch = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+
     private readonly CancellationTokenSource messagePumpCancellationTokenSource = new();
     private readonly CancellationTokenSource messageProcessingCancellationTokenSource = new();
     private readonly Task[] pumpTasks;
@@ -98,7 +100,11 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     {
         messagePumpCancellationTokenSource.Cancel();
 
+#if NET6 || NET7
         await using (cancellationToken.Register(() => messageProcessingCancellationTokenSource.Cancel()))
+#else
+        using (cancellationToken.Register(() => messageProcessingCancellationTokenSource.Cancel()))
+#endif
             await Task.WhenAll(pumpTasks).ConfigureAwait(false);
 
         messagePumpCancellationTokenSource.Dispose();
@@ -116,8 +122,20 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         var receivedMessages = await sqsService.ReceiveMessageAsync(messageRequest, cancellationToken).ConfigureAwait(false);
 
         LogMessageReceived(logger, receivedMessages.Messages.Count, queueUrl);
-
+#if NET6 || NET7
         await Parallel.ForEachAsync(receivedMessages.Messages, cancellationToken, async (message, token) => await ProcessMessageAsync(processMessageAsync, message, token).ConfigureAwait(false));
+#else
+        var tasks = new Task[receivedMessages.Messages.Count];
+
+        for (var i = 0; i < receivedMessages.Messages.Count; i++)
+        {
+            var message = receivedMessages.Messages[i];
+            tasks[i] = ProcessMessageAsync(processMessageAsync, message, cancellationToken);
+        }
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+#endif
+
     }
 
     private async Task ProcessMessageAsync(Func<T?, CancellationToken, Task> processMessageAsync, Message message, CancellationToken cancellationToken)
@@ -147,7 +165,11 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
     private static DateTime GetSentDateTime(Message message, TimeSpan clockOffset)
     {
+#if NET6 || NET7
         var result = DateTime.UnixEpoch.AddMilliseconds(long.Parse(message.Attributes["SentTimestamp"]));
+#else
+        var result = UnixEpoch.AddMilliseconds(long.Parse(message.Attributes["SentTimestamp"]));
+#endif
 
         // Adjust for clock skew between this endpoint and aws.
         // https://aws.amazon.com/blogs/developer/clock-skew-correction/

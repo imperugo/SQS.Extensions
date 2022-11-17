@@ -28,10 +28,10 @@ builder.Services.AddDefaultAWSOptions(new AWSOptions { Region = RegionEndpoint.E
 builder.Services.AddAWSService<IAmazonSQS>();
 
 // Dependency Injection
-builder.Services.AddSqsConsumerServices(() => new AwsConfiguration()
+// Configuration
+builder.Services.AddSqsConsumerServices(
+    () => new AwsConfiguration(region: "eu-central-1", accountId: "775704350706")
 {
-    Region = "eu-central-1",
-    AccountId = "11576350703",
     QueuePrefix = "develop-"
 });
 
@@ -75,10 +75,8 @@ internal sealed class MySqsConsumer : SqsHostedService<MySqsMessage>
     protected override Func<MySqsMessage?, CancellationToken, Task> ProcessMessageFunc => ConsumeMessageAsync;
 
     protected override MessagePumpConfiguration MessagePumpConfiguration =>
-        new ()
+        new (Constants.QUEUE_NAME_1)
         {
-            QueueName = Constants.QUEUE_NAME_1,
-
             // waiting time between calls to SQS.
             BatchDelay = TimeSpan.FromSeconds(10),
 
@@ -123,10 +121,8 @@ public sealed class MySuperSerializer : IMessageSerializer
 Then register it on DI
 
 ```csharp
-builder.Services.AddSqsConsumerWithCustomSerializer<MySuperSerializer>(() => new AwsConfiguration()
+builder.Services.AddSqsConsumerWithCustomSerializer<MySuperSerializer>(() => new AwsConfiguration(region: "eu-central-1", accountId: "775704350706")
 {
-    Region = "eu-central-1",
-    AccountId = "11576350703",
     QueuePrefix = "develop-"
 });
 ```
@@ -140,10 +136,9 @@ When you add the library to your DI you can specify these parameters
 
 ```csharp
 // Dependency Injection
-builder.Services.AddSqsConsumerServices(() => new AwsConfiguration()
+builder.Services.AddSqsConsumerServices(
+    () => new AwsConfiguration(region: "eu-central-1", accountId: "775704350706")
 {
-    Region = "eu-central-1",
-    AccountId = "11576350703",
     QueuePrefix = "develop-",
     QueueSuffix = "-temp"
 });
@@ -172,11 +167,8 @@ internal sealed class MySqsQueueHelper : ISqsQueueHelper
 Then register it on DI
 
 ```csharp
-builder.Services.AddSqsConsumerWithCustomQueueHeper<MySqsQueueHelper>(() => new AwsConfiguration()
-{
-    Region = "eu-central-1",
-    AccountId = "11576350703"
-});
+builder.Services.AddSqsConsumerWithCustomQueueHeper<MySqsQueueHelper>(
+    () => new AwsConfiguration(region: "eu-central-1", accountId: "775704350706"));
 ```
 
 ## Sample

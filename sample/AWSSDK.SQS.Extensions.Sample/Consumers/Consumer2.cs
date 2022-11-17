@@ -17,10 +17,8 @@ internal sealed class Consumer2 : SqsHostedService<MySqsMessage>
     protected override Func<MySqsMessage?, CancellationToken, Task> ProcessMessageFunc => ConsumeMessageAsync;
 
     protected override MessagePumpConfiguration MessagePumpConfiguration =>
-        new ()
+        new (Constants.QUEUE_NAME_2)
         {
-            QueueName = Constants.QUEUE_NAME_2,
-
             // waiting time between calls to SQS.
             BatchDelay = TimeSpan.FromSeconds(10),
 

@@ -1,3 +1,5 @@
+#if NET6 || NET7
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -23,3 +25,5 @@ internal class DateOnlyNullableConverter : JsonConverter<DateOnly?>
         writer.WriteStringValue(value.Value.ToString("yyyy-MM-dd"));
     }
 }
+
+#endif

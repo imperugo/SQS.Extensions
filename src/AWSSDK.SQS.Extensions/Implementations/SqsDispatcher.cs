@@ -122,6 +122,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         // Li gruppo per coda
         foreach (var group in requests.GroupBy(x => x.QueueUrl))
         {
+#if NET6 || NET7
             await Parallel.ForEachAsync(group.ToList().Split(maxNumberOfMessages), cancellationToken, async (messages, token) =>
             {
                 var queueUrl = sqsHelper.GetQueueUrl(messages[0].QueueUrl);
@@ -139,6 +140,32 @@ internal sealed class SqsDispatcher : ISqsDispatcher
                 await SqsClient.SendMessageBatchAsync(queueUrl, entries, token).ConfigureAwait(false);
             })
                 .ConfigureAwait(false);
+#else
+            var groupedMessages = group.ToList().Split(maxNumberOfMessages).ToList();
+
+            var tasks = new Task[groupedMessages.Count];
+
+            for (var i = 0; i < groupedMessages.Count; i++)
+            {
+                var messages = groupedMessages[i];
+
+                var queueUrl = sqsHelper.GetQueueUrl(messages[0].QueueUrl);
+                var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessages);
+
+                foreach (var message in messages)
+                {
+                    var entry = new SendMessageBatchRequestEntry();
+                    entry.Id = Guid.NewGuid().ToString("N");
+                    entry.MessageBody = message.MessageBody;
+                    entry.DelaySeconds = message.DelaySeconds;
+                    entries.Add(entry);
+                }
+
+                tasks[i] = SqsClient.SendMessageBatchAsync(queueUrl, entries, cancellationToken);
+            }
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+#endif
         }
     }
 }
