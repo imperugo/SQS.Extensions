@@ -1,0 +1,13 @@
+{
+    "RenameOptions": {
+        "RenameInComments": false,
+        "RenameOverloads": true,
+        "RenameInStrings": false
+    },
+    "FormattingOptions": {
+        "OrganizeImports": true
+    },
+    "RoslynExtensionsOptions": {
+        "EnableAnalyzersSupport": true
+    }
+}

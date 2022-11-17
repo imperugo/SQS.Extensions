@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AA01A318-A93F-46D3-A4F9-10EF98AEB8C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AWSSDK.SQS.Extensions", "src\AWSSDK.SQS.Extensions\AWSSDK.SQS.Extensions.csproj", "{66399A7D-69D9-4B8E-B8F8-D5F126F6A186}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{BC3A8349-DC78-495D-A152-5DBE9131C6D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AWSSDK.SQS.Extensions.Tests", "tests\AWSSDK.SQS.Extensions.Tests\AWSSDK.SQS.Extensions.Tests.csproj", "{7D821D1A-DB65-48DB-91F2-BF0C6DC135EC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{E245E82E-9BFF-4DD5-81BF-3526134F87C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AWSSDK.SQS.Extensions.Sample", "sample\AWSSDK.SQS.Extensions.Sample\AWSSDK.SQS.Extensions.Sample.csproj", "{2C9507AA-5DF5-4523-B27A-5D65D095A403}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{66399A7D-69D9-4B8E-B8F8-D5F126F6A186}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66399A7D-69D9-4B8E-B8F8-D5F126F6A186}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66399A7D-69D9-4B8E-B8F8-D5F126F6A186}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66399A7D-69D9-4B8E-B8F8-D5F126F6A186}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D821D1A-DB65-48DB-91F2-BF0C6DC135EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D821D1A-DB65-48DB-91F2-BF0C6DC135EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D821D1A-DB65-48DB-91F2-BF0C6DC135EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D821D1A-DB65-48DB-91F2-BF0C6DC135EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C9507AA-5DF5-4523-B27A-5D65D095A403}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C9507AA-5DF5-4523-B27A-5D65D095A403}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C9507AA-5DF5-4523-B27A-5D65D095A403}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C9507AA-5DF5-4523-B27A-5D65D095A403}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{66399A7D-69D9-4B8E-B8F8-D5F126F6A186} = {AA01A318-A93F-46D3-A4F9-10EF98AEB8C3}
+		{7D821D1A-DB65-48DB-91F2-BF0C6DC135EC} = {BC3A8349-DC78-495D-A152-5DBE9131C6D1}
+		{2C9507AA-5DF5-4523-B27A-5D65D095A403} = {E245E82E-9BFF-4DD5-81BF-3526134F87C2}
+	EndGlobalSection
+EndGlobal

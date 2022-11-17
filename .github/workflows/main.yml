@@ -1,0 +1,69 @@
+name: AWSSDK.SQS.Extensions Build
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "*.*.*"
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "macos-latest"]
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core7.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 7.0.x
+
+      - run: dotnet --info
+      - if: matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest'
+        run: ./build.sh
+
+  publish:
+    needs: build
+    name: Publish Nuget Packages
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET Core 2.1
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 2.1.x
+
+      - name: Setup .NET Core 3.1
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
+      - name: Setup .NET Core 5.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+
+      - name: Setup .NET Core 6.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Setup .NET Core 7.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 7.0.x
+
+      - name: Build with dotnet
+        run: ./NuGetPack.bat
+        shell: bash
+      - name: Publish nuget
+        run: |
+          for f in ./packages/*.nupkg
+          do
+            dotnet nuget push $f --api-key ${{ secrets.NuGetApiKey}} --source https://api.nuget.org/v3/index.json
+          done
+        shell: bash
