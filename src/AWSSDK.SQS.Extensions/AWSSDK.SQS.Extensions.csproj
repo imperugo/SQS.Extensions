@@ -13,16 +13,12 @@
     <PackageProjectUrl>https://github.com/imperugo/AWSSDK.SQS.Extensions</PackageProjectUrl>
     <PackageId>AWSSDK.SQS.Extensions</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageTags>AWS SQS Queue Helper Extensions</PackageTags>
     <PackageIcon>logo.png</PackageIcon>
     <PackageIconUrl>https://github.com/imperugo/AWSSDK.SQS.Extensions/blob/main/docs/static/images/logo.png?raw=true</PackageIconUrl>
     <PackageDescription>
       A set of extension for AWS SQS
     </PackageDescription>
-    <RepositoryUrl>https://github.com/imperugo/AWSSDK.SQS.Extensions/</RepositoryUrl>
-    <RepositoryType>Git</RepositoryType>
-    <Description>A set of extension for AWS SQS</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     
