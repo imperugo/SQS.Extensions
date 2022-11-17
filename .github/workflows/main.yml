@@ -7,7 +7,6 @@ on:
       - "*.*.*"
 jobs:
   publish:
-    needs: build
     name: Publish Nuget Packages
     runs-on: windows-2019
     steps:
