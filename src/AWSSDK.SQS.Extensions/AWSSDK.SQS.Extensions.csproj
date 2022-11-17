@@ -2,8 +2,10 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461;net472;netcoreapp3.1;net5.0;net6.0;net7.0</TargetFrameworks>
+    <!--
     <EnablePackageValidation>true</EnablePackageValidation>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    -->
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageProjectUrl>https://github.com/imperugo/AWSSDK.SQS.Extensions</PackageProjectUrl>
@@ -26,6 +28,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.SQS" Version="3.7.100.16" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
