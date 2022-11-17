@@ -28,7 +28,7 @@ jobs:
         run: dotnet test --verbosity quiet
 
       - name: Build with dotnet
-        run: dotnet pack src\AWSSDK.SQS.Extensions\AWSSDK.SQS.Extensions.csproj -o .\packages\ -c Release
+        run: dotnet pack ./src/AWSSDK.SQS.Extensions/AWSSDK.SQS.Extensions.csproj -o ./packages/ -c Release
         shell: bash
 
       - name: Publish nuget
