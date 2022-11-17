@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace AWSSDK.SQS.Extensions.Implementations;
 
+/// <summary>
+/// The implementation of <see cref="ISqsMessagePumpFactory"/>
+/// </summary>
 internal sealed class SqsSqsMessagePumpFactory : ISqsMessagePumpFactory
 {
     private readonly IAmazonSQS sqsService;
@@ -14,6 +17,9 @@ internal sealed class SqsSqsMessagePumpFactory : ISqsMessagePumpFactory
     private readonly IMessageSerializer messageSerializer;
     private readonly ISqsQueueHelper sqsHelper;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqsSqsMessagePumpFactory"/> class.
+    /// </summary>
     public SqsSqsMessagePumpFactory(
         IAmazonSQS sqsService,
         ILoggerFactory loggerFactory,
@@ -26,6 +32,7 @@ internal sealed class SqsSqsMessagePumpFactory : ISqsMessagePumpFactory
         this.sqsHelper = sqsHelper;
     }
 
+    /// <inheritdoc/>
     public async Task<ISqsMessagePump<T>> CreateAsync<T>(MessagePumpConfiguration configuration, CancellationToken cancellationToken)
     {
         var logger = loggerFactory.CreateLogger<ILogger<SqsMessagePump<T>>>();

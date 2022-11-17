@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace AWSSDK.SQS.Extensions.Serialization.Json.Converters;
 
-public class DateOnlyConverter : JsonConverter<DateOnly>
+internal class DateOnlyConverter : JsonConverter<DateOnly>
 {
     public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

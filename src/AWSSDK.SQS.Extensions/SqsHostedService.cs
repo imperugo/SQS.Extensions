@@ -6,21 +6,34 @@ using Microsoft.Extensions.Logging;
 
 namespace AWSSDK.SQS.Extensions;
 
+/// <summary>
+/// The base implementation of SQS Consumer
+/// </summary>
 public abstract partial class SqsHostedService<T> : BackgroundService
 {
     private readonly ILogger logger;
     private readonly ISqsMessagePumpFactory messagePumpFactory;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqsHostedService{T}"/> class.
+    /// </summary>
     protected SqsHostedService(ILogger logger, ISqsMessagePumpFactory messagePumpFactory)
     {
         this.logger = logger;
         this.messagePumpFactory = messagePumpFactory;
     }
 
+    /// <summary>
+    /// The function to call when a message has been caught from the queue.
+    /// </summary>
     protected abstract Func<T?, CancellationToken, Task> ProcessMessageFunc { get; }
 
+    /// <summary>
+    /// The pump configuration
+    /// </summary>
     protected abstract MessagePumpConfiguration MessagePumpConfiguration { get; }
 
+    /// <inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         try

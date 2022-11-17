@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace AWSSDK.SQS.Extensions.Implementations;
 
+/// <summary>
+/// The implementation of <see cref="ISqsMessagePump{T}"/>
+/// </summary>
 internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisposable
 {
     private readonly IAmazonSQS sqsService;
@@ -22,6 +25,9 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     private readonly int numberOfMessagesToFetch;
     private readonly string queueUrl;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqsMessagePump{T}"/> class.
+    /// </summary>
     public SqsMessagePump(
         IAmazonSQS sqsService,
         ILogger logger,
@@ -47,7 +53,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         }
 
         pumpTasks = new Task[numberOfPumps];
-        queueUrl = queueHelper.GetQueueName(configuration.QueueName);
+        queueUrl = queueHelper.GetQueueUrl(configuration.QueueName);
     }
 
     internal async Task InitAsync(CancellationToken cancellationToken = default)
@@ -66,6 +72,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         }
     }
 
+    /// <inheritdoc/>
     public Task PumpAsync(Func<T?, CancellationToken, Task> processMessageAsync, CancellationToken cancellationToken = default)
     {
         var receiveMessagesRequest = new ReceiveMessageRequest
@@ -86,6 +93,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         return Task.WhenAll(pumpTasks);
     }
 
+    /// <inheritdoc/>
     public async Task StopPumpAsync(CancellationToken cancellationToken = default)
     {
         messagePumpCancellationTokenSource.Cancel();
@@ -97,6 +105,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         messageProcessingCancellationTokenSource.Dispose();
     }
 
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
         await StopPumpAsync().ConfigureAwait(false);

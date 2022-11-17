@@ -2,6 +2,9 @@
 
 namespace AWSSDK.SQS.Extensions.Configurations;
 
+/// <summary>
+/// The AWS Configuration
+/// </summary>
 public sealed record class AwsConfiguration
 {
     /// <summary>

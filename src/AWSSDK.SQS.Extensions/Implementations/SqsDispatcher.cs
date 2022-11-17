@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace AWSSDK.SQS.Extensions.Implementations;
 
+/// <summary>
+/// Jil implementation of <see cref="ISqsDispatcher"/>
+/// </summary>
 internal sealed class SqsDispatcher : ISqsDispatcher
 {
     private readonly ISqsQueueHelper sqsHelper;
@@ -16,6 +19,9 @@ internal sealed class SqsDispatcher : ISqsDispatcher
 
     public IAmazonSQS SqsClient { get; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqsDispatcher"/> class.
+    /// </summary>
     public SqsDispatcher(
         IAmazonSQS sqsService,
         ISqsQueueHelper sqsHelper,
@@ -29,21 +35,25 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         this.messageSerializer = messageSerializer;
     }
 
+    /// <inheritdoc/>
     public Task QueueAsync<T>(T obj, string queueName, CancellationToken cancellationToken = default)
     {
         return QueueAsync(obj, queueName, 0, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public Task QueueAsync<T>(T obj, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
     {
         return QueueAsync(messageSerializer.Serialize(obj), queueName, delaySeconds, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public Task QueueAsync<T>(T[] obj, string queueName, CancellationToken cancellationToken = default)
     {
         return QueueAsync(obj, queueName, 0, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public Task QueueAsync<T>(T[] obj, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
     {
         var serializedObects = new string[obj.Length];
@@ -54,16 +64,18 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         return QueueAsync(serializedObects, queueName, delaySeconds, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public Task QueueAsync(string serializedObject, string queueName, CancellationToken cancellationToken = default)
     {
         return QueueAsync(serializedObject, queueName, 0, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public Task QueueAsync(string serializedObject, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
     {
         var request = new SendMessageRequest
         {
-            QueueUrl = sqsHelper.GetQueueName(queueName),
+            QueueUrl = sqsHelper.GetQueueUrl(queueName),
             MessageBody = serializedObject,
             DelaySeconds = delaySeconds
         };
@@ -74,6 +86,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         return SqsClient.SendMessageAsync(request, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public Task QueueAsync(string[] serializedObject, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
     {
         var requests = new SendMessageRequest[serializedObject.Length];
@@ -82,7 +95,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         {
             requests[i] = new SendMessageRequest
             {
-                QueueUrl = sqsHelper.GetQueueName(queueName),
+                QueueUrl = sqsHelper.GetQueueUrl(queueName),
                 MessageBody = serializedObject[i],
                 DelaySeconds = delaySeconds
             };
@@ -91,14 +104,16 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         return QueueAsync(requests, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public Task QueueAsync(SendMessageRequest request, CancellationToken cancellationToken = default)
     {
         // This is needed in case the caller will add the queue name instead of queue url
-        request.QueueUrl = sqsHelper.GetQueueName(request.QueueUrl);
+        request.QueueUrl = sqsHelper.GetQueueUrl(request.QueueUrl);
 
         return SqsClient.SendMessageAsync(request, cancellationToken);
     }
 
+    /// <inheritdoc/>
     public async Task QueueAsync(SendMessageRequest[] requests, CancellationToken cancellationToken = default)
     {
         // 10 è il numero massimo di messaggi che posso inviare a SQS in una singola richiesta
@@ -109,7 +124,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         {
             await Parallel.ForEachAsync(group.ToList().Split(maxNumberOfMessages), cancellationToken, async (messages, token) =>
             {
-                var queueUrl = sqsHelper.GetQueueName(messages[0].QueueUrl);
+                var queueUrl = sqsHelper.GetQueueUrl(messages[0].QueueUrl);
                 var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessages);
 
                 foreach (var message in messages)

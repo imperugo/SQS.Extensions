@@ -6,7 +6,7 @@ using AWSSDK.SQS.Extensions.Serialization.Json.Converters;
 
 namespace AWSSDK.SQS.Extensions.Serialization.Json;
 
-public static class SerializationOptions
+internal static class SerializationOptions
 {
     public static JsonSerializerOptions Default
     {

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace AWSSDK.SQS.Extensions.Serialization.Json.Converters;
 
-public class CultureCustomConverter : JsonConverter<CultureInfo>
+internal class CultureCustomConverter : JsonConverter<CultureInfo>
 {
     public override CultureInfo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

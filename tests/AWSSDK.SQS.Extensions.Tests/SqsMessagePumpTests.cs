@@ -36,7 +36,7 @@ public class SqsMessagePumpTests : IAsyncDisposable
         };
 
         sqsQueueHelperMock
-            .Setup(x => x.GetQueueName(It.IsAny<string>()))
+            .Setup(x => x.GetQueueUrl(It.IsAny<string>()))
             .Returns(Constants.DEFAULT_TEST_QUEUE_URL);
 
         sut = new SqsMessagePump<string>(amazonSqsMock.Object, loggerMock.Object, configuration, sqsQueueHelperMock.Object, messageSerializerMock.Object);

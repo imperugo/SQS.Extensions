@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace AWSSDK.SQS.Extensions.Serialization.Json.Converters;
 
-public class TimezoneCustomConverter : JsonConverter<TimeZoneInfo>
+internal class TimezoneCustomConverter : JsonConverter<TimeZoneInfo>
 {
     public override TimeZoneInfo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

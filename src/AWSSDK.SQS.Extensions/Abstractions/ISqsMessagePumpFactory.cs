@@ -2,6 +2,9 @@ using AWSSDK.SQS.Extensions.Configurations;
 
 namespace AWSSDK.SQS.Extensions.Abstractions;
 
+/// <summary>
+/// Contract for the message pump factory
+/// </summary>
 public interface ISqsMessagePumpFactory
 {
     /// <summary>
