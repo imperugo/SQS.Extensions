@@ -1,10 +1,10 @@
-# SQS.Extensions.Sample
+# SQS.Extensions
 
-[![Nuget](https://img.shields.io/nuget/v/SQS.Extensions.Sample?style=flat-square)](https://www.nuget.org/packages/SQS.Extensions.Sample/)
-[![Nuget](https://img.shields.io/nuget/vpre/SQS.Extensions.Sample?style=flat-square)](https://www.nuget.org/packages/SQS.Extensions.Sample/)
-[![GitHub](https://img.shields.io/github/license/imperugo/SQS.Extensions.Sample?style=flat-square)](https://github.com/imperugo/SQS.Extensions.Sample/blob/main/LICENSE)
+[![Nuget](https://img.shields.io/nuget/v/SQS.Extensions?style=flat-square)](https://www.nuget.org/packages/SQS.Extensions/)
+[![Nuget](https://img.shields.io/nuget/vpre/SQS.Extensions?style=flat-square)](https://www.nuget.org/packages/SQS.Extensions/)
+[![GitHub](https://img.shields.io/github/license/imperugo/SQS.Extensions?style=flat-square)](https://github.com/imperugo/SQS.Extensions/blob/main/LICENSE)
 
-SQS.Extensions.Sample is a .NET library with the idea to helps developer using AWS Sqs.
+SQS.Extensions is a .NET library with the idea to helps developer using AWS Sqs.
 
 Behind the scenes it covers a set of repetitive tasks, handle complexity and highly customizable.
 
@@ -15,7 +15,7 @@ Behind the scenes it covers a set of repetitive tasks, handle complexity and hig
 Add the NuGet Package to your project:
 
 ```bash
-dotnet add package SQS.Extensions.Sample
+dotnet add package SQS.Extensions
 ```
 
 ### Configuration
@@ -173,16 +173,16 @@ builder.Services.AddSqsConsumerWithCustomQueueHeper<MySqsQueueHelper>(
 
 ## Sample
 
-Take a look [here](https://github.com/imperugo/SQS.Extensions.Sample/blob/main/sample/SQS.Extensions.Sample.Sample****)
+Take a look [here](https://github.com/imperugo/SQS.Extensions/blob/main/sample/SQS.Extensions.Sample****)
 
 ## License
 
-SQS.Extensions.Sample [MIT](https://github.com/imperugo/SQS.Extensions.Sample/blob/main/LICENSE) licensed.
+SQS.Extensions [MIT](https://github.com/imperugo/SQS.Extensions/blob/main/LICENSE) licensed.
 
 ### Contributing
 
 Thanks to all the people who already contributed!
 
-<a href="https://github.com/imperugo/SQS.Extensions.Sample/graphs/contributors">
-  <img src="https://contributors-img.web.app/image?repo=imperugo/SQS.Extensions.Sample" />
+<a href="https://github.com/imperugo/SQS.Extensions/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=imperugo/SQS.Extensions" />
 </a>
