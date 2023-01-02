@@ -18,7 +18,10 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     private readonly MessagePumpConfiguration configuration;
     private readonly IMessageSerializer messageSerializer;
 
+#if NET6_0_OR_GREATER
+#else
     public static readonly DateTime UnixEpoch = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+#endif
 
     private readonly CancellationTokenSource messagePumpCancellationTokenSource = new();
     private readonly CancellationTokenSource messageProcessingCancellationTokenSource = new();
@@ -100,7 +103,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     {
         messagePumpCancellationTokenSource.Cancel();
 
-#if NET6_0 || NET7_0
+#if NET6_0_OR_GREATER
         await using (cancellationToken.Register(() => messageProcessingCancellationTokenSource.Cancel()))
 #else
         using (cancellationToken.Register(() => messageProcessingCancellationTokenSource.Cancel()))
@@ -122,7 +125,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         var receivedMessages = await sqsService.ReceiveMessageAsync(messageRequest, cancellationToken).ConfigureAwait(false);
 
         LogMessageReceived(logger, receivedMessages.Messages.Count, queueUrl);
-#if NET6_0 || NET7_0
+#if NET6_0_OR_GREATER
         await Parallel.ForEachAsync(receivedMessages.Messages, cancellationToken, async (message, token) => await ProcessMessageAsync(processMessageAsync, message, token).ConfigureAwait(false));
 #else
         var tasks = new Task[receivedMessages.Messages.Count];
@@ -165,7 +168,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
     private static DateTime GetSentDateTime(Message message, TimeSpan clockOffset)
     {
-#if NET6_0 || NET7_0
+#if NET6_0_OR_GREATER
         var result = DateTime.UnixEpoch.AddMilliseconds(long.Parse(message.Attributes["SentTimestamp"]));
 #else
         var result = UnixEpoch.AddMilliseconds(long.Parse(message.Attributes["SentTimestamp"]));

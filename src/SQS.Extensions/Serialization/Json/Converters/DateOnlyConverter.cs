@@ -1,4 +1,4 @@
-#if NET6_0 || NET7_0
+#if NET6_0_OR_GREATER
 
 using System.Text.Json;
 using System.Text.Json.Serialization;

@@ -27,7 +27,7 @@ internal static class SerializationOptions
             options.Converters.Add(new TimezoneCustomConverter());
             options.Converters.Add(new TimeSpanConverter());
 
-#if NET6_0 || NET7_0
+#if NET6_0_OR_GREATER
             options.Converters.Add(new DateOnlyConverter());
             options.Converters.Add(new DateOnlyNullableConverter());
 #endif
