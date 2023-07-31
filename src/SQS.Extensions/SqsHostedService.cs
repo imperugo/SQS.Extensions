@@ -11,7 +11,6 @@ namespace SQS.Extensions;
 /// </summary>
 public abstract partial class SqsHostedService<T> : BackgroundService
 {
-    private readonly ILogger logger;
     private readonly ISqsMessagePumpFactory messagePumpFactory;
 
     /// <summary>
@@ -19,7 +18,7 @@ public abstract partial class SqsHostedService<T> : BackgroundService
     /// </summary>
     protected SqsHostedService(ILogger logger, ISqsMessagePumpFactory messagePumpFactory)
     {
-        this.logger = logger;
+        this.Logger = logger;
         this.messagePumpFactory = messagePumpFactory;
     }
 
@@ -38,7 +37,7 @@ public abstract partial class SqsHostedService<T> : BackgroundService
     {
         try
         {
-            LogHostServiceStarted(logger);
+            LogHostServiceStarted(Logger);
             var pump = await messagePumpFactory.CreateAsync<T>(MessagePumpConfiguration, cancellationToken);
 
             while (!cancellationToken.IsCancellationRequested)
@@ -49,7 +48,7 @@ public abstract partial class SqsHostedService<T> : BackgroundService
                 }
                 catch (Exception e)
                 {
-                    LogPumpError(logger, e);
+                    LogPumpError(Logger, e);
                 }
 
                 await Task.Delay(MessagePumpConfiguration.BatchDelay, cancellationToken);
@@ -57,9 +56,17 @@ public abstract partial class SqsHostedService<T> : BackgroundService
         }
         catch (Exception e)
         {
-            LogCriticalError(logger, e.Message, e);
+            LogCriticalError(Logger, e.Message, e);
         }
     }
+
+    /// <summary>
+    /// Gets the logger used by the current class.
+    /// </summary>
+    /// <value>
+    /// The logger used for logging in the current class.
+    /// </value>
+    protected ILogger Logger { get ; }
 
     [LoggerMessage(EventId = 101, Level = LogLevel.Information, Message = "Sqs Hosted Service is starting")]
     private static partial void LogHostServiceStarted(ILogger logger);
