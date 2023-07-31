@@ -19,6 +19,7 @@ public interface ISqsQueueHelper
     /// Gets the length of the specified queue.
     /// </summary>
     /// <param name="queueName">The name of the queue.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The length of the queue.</returns>
-    Task<long> GetQueueLengthAsync(string queueName);
+    Task<long> GetQueueLengthAsync(string queueName, CancellationToken cancellationToken = default);
 }

@@ -48,7 +48,7 @@ internal sealed class DefaultSqsQueueHelper : ISqsQueueHelper
     }
 
     /// <inheritdoc/>
-    public async Task<long> GetQueueLengthAsync(string queueName)
+    public async Task<long> GetQueueLengthAsync(string queueName, CancellationToken cancellationToken = default)
     {
         var request = new GetQueueAttributesRequest
         {
@@ -56,7 +56,7 @@ internal sealed class DefaultSqsQueueHelper : ISqsQueueHelper
             AttributeNames = new List<string> { "ApproximateNumberOfMessages" }
         };
 
-        var response = await sqsClient.GetQueueAttributesAsync(request);
+        var response = await sqsClient.GetQueueAttributesAsync(request, cancellationToken);
 
         if (response.Attributes.TryGetValue("ApproximateNumberOfMessages", out var messageCountStr) && int.TryParse(messageCountStr, out var messageCount))
             return messageCount;
