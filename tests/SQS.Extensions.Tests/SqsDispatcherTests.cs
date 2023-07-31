@@ -15,16 +15,14 @@ namespace AWS.SDK.SQS.Extensions.Tests;
 public class SqsDispatcherTests
 {
     private readonly Mock<IAmazonSQS> amazonSqsMock;
-    private readonly Mock<ISqsQueueHelper> serviceProviderMock;
-    private readonly Mock<IMessageSerializer> messageSerializerMock;
     private readonly Mock<ILogger<SqsDispatcher>> logger = new();
     private readonly SqsDispatcher sut;
 
     public SqsDispatcherTests()
     {
         amazonSqsMock = new Mock<IAmazonSQS>();
-        serviceProviderMock = new Mock<ISqsQueueHelper>();
-        messageSerializerMock = new Mock<IMessageSerializer>();
+        var serviceProviderMock = new Mock<ISqsQueueHelper>();
+        var messageSerializerMock = new Mock<IMessageSerializer>();
 
         serviceProviderMock
             .Setup(x => x.GetQueueUrl(It.IsAny<string>()))
