@@ -20,7 +20,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
 #if NET6_0_OR_GREATER
 #else
-    public static readonly DateTime UnixEpoch = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime UnixEpoch = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 #endif
 
     private readonly CancellationTokenSource messagePumpCancellationTokenSource = new();

@@ -1,3 +1,6 @@
+using Amazon.SQS;
+using Amazon.SQS.Model;
+
 using SQS.Extensions.Abstractions;
 using SQS.Extensions.Configurations;
 
@@ -9,13 +12,15 @@ namespace SQS.Extensions.Implementations;
 internal sealed class DefaultSqsQueueHelper : ISqsQueueHelper
 {
     private readonly AwsConfiguration awsConfiguration;
+    private readonly IAmazonSQS sqsClient;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultSqsQueueHelper"/> class.
     /// </summary>
-    public DefaultSqsQueueHelper(AwsConfiguration awsConfiguration)
+    public DefaultSqsQueueHelper(AwsConfiguration awsConfiguration, IAmazonSQS sqsClient)
     {
         this.awsConfiguration = awsConfiguration;
+        this.sqsClient = sqsClient;
     }
 
     /// <inheritdoc/>
@@ -40,5 +45,22 @@ internal sealed class DefaultSqsQueueHelper : ISqsQueueHelper
         }
 
         return $"https://sqs.{awsConfiguration.Region}.amazonaws.com/{awsConfiguration.AccountId}/{queueName}";
+    }
+
+    /// <inheritdoc/>
+    public async Task<long> GetQueueLengthAsync(string queueName)
+    {
+        var request = new GetQueueAttributesRequest
+        {
+            QueueUrl = GetQueueUrl(queueName),
+            AttributeNames = new List<string> { "ApproximateNumberOfMessages" }
+        };
+
+        var response = await sqsClient.GetQueueAttributesAsync(request);
+
+        if (response.Attributes.TryGetValue("ApproximateNumberOfMessages", out var messageCountStr) && int.TryParse(messageCountStr, out var messageCount))
+            return messageCount;
+
+        return 0;
     }
 }
