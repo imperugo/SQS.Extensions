@@ -55,14 +55,31 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
+    public Task QueueAsync<T>(List<T> obj, string queueName, CancellationToken cancellationToken = default)
+    {
+        return QueueAsync(obj, queueName, 0, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public Task QueueAsync<T>(T[] obj, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
     {
-        var serializedObects = new string[obj.Length];
+        var serializedObjects = new string[obj.Length];
 
         for (var i = 0; i < obj.Length; i++)
-            serializedObects[i] = messageSerializer.Serialize(obj);
+            serializedObjects[i] = messageSerializer.Serialize(obj);
 
-        return QueueAsync(serializedObects, queueName, delaySeconds, cancellationToken);
+        return QueueAsync(serializedObjects, queueName, delaySeconds, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public Task QueueAsync<T>(List<T> obj, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
+    {
+        var serializedObjects = new string[obj.Count];
+
+        for (var i = 0; i < obj.Count; i++)
+            serializedObjects[i] = messageSerializer.Serialize(obj);
+
+        return QueueAsync(serializedObjects, queueName, delaySeconds, cancellationToken);
     }
 
     /// <inheritdoc/>
