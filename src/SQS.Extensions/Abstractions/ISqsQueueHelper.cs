@@ -13,7 +13,7 @@ public interface ISqsQueueHelper
     /// <example>
     ///    "https://sqs.eu-central-1.amazonaws.com/775704350706/develop-queue-name"
     /// </example>
-    string GetQueueUrl(string queueName);
+    ValueTask<string> GetQueueUrlAsync(string queueName);
 
     /// <summary>
     /// Gets the length of the specified queue.

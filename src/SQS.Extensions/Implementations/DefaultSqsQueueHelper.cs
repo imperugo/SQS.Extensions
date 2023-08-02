@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 using Amazon.SQS;
 using Amazon.SQS.Model;
 
@@ -11,6 +13,7 @@ namespace SQS.Extensions.Implementations;
 /// </summary>
 internal sealed class DefaultSqsQueueHelper : ISqsQueueHelper
 {
+    private static readonly ConcurrentDictionary<string, string> queueUrlsCache = new ();
     private readonly AwsConfiguration awsConfiguration;
     private readonly IAmazonSQS sqsClient;
 
@@ -24,8 +27,11 @@ internal sealed class DefaultSqsQueueHelper : ISqsQueueHelper
     }
 
     /// <inheritdoc/>
-    public string GetQueueUrl(string queueName)
+    public async ValueTask<string> GetQueueUrlAsync(string queueName)
     {
+        if (queueUrlsCache.TryGetValue(queueName, out var queueUrl))
+            return queueUrl;
+
         // Ok, the queue is already an url
         if (queueName.StartsWith("https://sqs."))
             return queueName;
@@ -44,7 +50,16 @@ internal sealed class DefaultSqsQueueHelper : ISqsQueueHelper
                 queueName = $"{queueName}{awsConfiguration.QueueSuffix}";
         }
 
-        return $"https://sqs.{awsConfiguration.Region}.amazonaws.com/{awsConfiguration.AccountId}/{queueName}";
+        var request = new GetQueueUrlRequest
+        {
+            QueueName = queueName
+        };
+
+        var response = await sqsClient.GetQueueUrlAsync(request);
+
+        queueUrlsCache.TryAdd(queueName, response.QueueUrl);
+
+        return response.QueueUrl;
     }
 
     /// <inheritdoc/>
@@ -52,7 +67,7 @@ internal sealed class DefaultSqsQueueHelper : ISqsQueueHelper
     {
         var request = new GetQueueAttributesRequest
         {
-            QueueUrl = GetQueueUrl(queueName),
+            QueueUrl = await GetQueueUrlAsync(queueName),
             AttributeNames = new List<string> { "ApproximateNumberOfMessages" }
         };
 

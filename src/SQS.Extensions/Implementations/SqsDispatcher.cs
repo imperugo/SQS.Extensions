@@ -72,11 +72,11 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public Task QueueAsync(string serializedObject, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
+    public async Task QueueAsync(string serializedObject, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
     {
         var request = new SendMessageRequest
         {
-            QueueUrl = sqsHelper.GetQueueUrl(queueName),
+            QueueUrl = await sqsHelper.GetQueueUrlAsync(queueName),
             MessageBody = serializedObject,
             DelaySeconds = delaySeconds
         };
@@ -84,11 +84,11 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         if (logger.IsEnabled(LogLevel.Debug))
             logger.LogDebug("Pushing message into SQS Queue: {QueueName} with this value {SerializedValue}", queueName, serializedObject);
 
-        return SqsClient.SendMessageAsync(request, cancellationToken);
+        await SqsClient.SendMessageAsync(request, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task QueueAsync(string[] serializedObject, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
+    public async Task QueueAsync(string[] serializedObject, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
     {
         var requests = new SendMessageRequest[serializedObject.Length];
 
@@ -96,22 +96,22 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         {
             requests[i] = new SendMessageRequest
             {
-                QueueUrl = sqsHelper.GetQueueUrl(queueName),
+                QueueUrl = await sqsHelper.GetQueueUrlAsync(queueName),
                 MessageBody = serializedObject[i],
                 DelaySeconds = delaySeconds
             };
         }
 
-        return QueueAsync(requests, cancellationToken);
+        await QueueAsync(requests, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task QueueAsync(SendMessageRequest request, CancellationToken cancellationToken = default)
+    public async Task QueueAsync(SendMessageRequest request, CancellationToken cancellationToken = default)
     {
         // This is needed in case the caller will add the queue name instead of queue url
-        request.QueueUrl = sqsHelper.GetQueueUrl(request.QueueUrl);
+        request.QueueUrl = await sqsHelper.GetQueueUrlAsync(request.QueueUrl);
 
-        return SqsClient.SendMessageAsync(request, cancellationToken);
+        await SqsClient.SendMessageAsync(request, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -126,7 +126,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
 #if NET6_0 || NET7_0
             await Parallel.ForEachAsync(group.ToList().Split(maxNumberOfMessages), cancellationToken, async (messages, token) =>
             {
-                var queueUrl = sqsHelper.GetQueueUrl(messages[0].QueueUrl);
+                var queueUrl = await sqsHelper.GetQueueUrlAsync(messages[0].QueueUrl);
                 var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessages);
 
                 foreach (var message in messages)
@@ -150,7 +150,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
             {
                 var messages = groupedMessages[i];
 
-                var queueUrl = sqsHelper.GetQueueUrl(messages[0].QueueUrl);
+                var queueUrl = await sqsHelper.GetQueueUrlAsync(messages[0].QueueUrl);
                 var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessages);
 
                 foreach (var message in messages)

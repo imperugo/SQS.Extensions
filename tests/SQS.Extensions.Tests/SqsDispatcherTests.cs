@@ -25,8 +25,8 @@ public class SqsDispatcherTests
         var messageSerializerMock = new Mock<IMessageSerializer>();
 
         serviceProviderMock
-            .Setup(x => x.GetQueueUrl(It.IsAny<string>()))
-            .Returns(Constants.DEFAULT_TEST_QUEUE_URL);
+            .Setup(x => x.GetQueueUrlAsync(It.IsAny<string>()))
+            .ReturnsAsync(Constants.DEFAULT_TEST_QUEUE_URL);
 
         messageSerializerMock
             .Setup(x => x.Serialize(It.IsAny<It.IsAnyType>()))

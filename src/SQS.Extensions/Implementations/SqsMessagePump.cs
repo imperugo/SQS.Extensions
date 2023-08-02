@@ -16,6 +16,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     private readonly IAmazonSQS sqsService;
     private readonly ILogger logger;
     private readonly MessagePumpConfiguration configuration;
+    private readonly ISqsQueueHelper queueHelper;
     private readonly IMessageSerializer messageSerializer;
 
 #if NET6_0_OR_GREATER
@@ -28,7 +29,6 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     private readonly Task[] pumpTasks;
     private readonly int numberOfPumps;
     private readonly int numberOfMessagesToFetch;
-    private readonly string queueUrl;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqsMessagePump{T}"/> class.
@@ -43,6 +43,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         this.sqsService = sqsService;
         this.logger = logger;
         this.configuration = configuration;
+        this.queueHelper = queueHelper;
         this.messageSerializer = messageSerializer;
 
         // 10 is a limit of SQS reason why I've to scale with the pump
@@ -58,7 +59,6 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         }
 
         pumpTasks = new Task[numberOfPumps];
-        queueUrl = queueHelper.GetQueueUrl(configuration.QueueName);
     }
 
     internal async Task InitAsync(CancellationToken cancellationToken = default)
@@ -68,6 +68,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
         try
         {
+            var queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
             await sqsService.PurgeQueueAsync(queueUrl, cancellationToken).ConfigureAwait(false);
             LogQueuePurge(logger, queueUrl);
         }
@@ -78,8 +79,10 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     }
 
     /// <inheritdoc/>
-    public Task PumpAsync(Func<T?, CancellationToken, Task> processMessageAsync, CancellationToken cancellationToken = default)
+    public async Task PumpAsync(Func<T?, CancellationToken, Task> processMessageAsync, CancellationToken cancellationToken = default)
     {
+        var queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
+
         var receiveMessagesRequest = new ReceiveMessageRequest
         {
             MaxNumberOfMessages = numberOfMessagesToFetch,
@@ -95,7 +98,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         for (var i = 0; i < numberOfPumps; i++)
             pumpTasks[i] = ConsumeMessagesAsync(processMessageAsync, receiveMessagesRequest, cancellationToken);
 
-        return Task.WhenAll(pumpTasks);
+        await Task.WhenAll(pumpTasks);
     }
 
     /// <inheritdoc/>
@@ -123,6 +126,8 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     private async Task ConsumeMessagesAsync(Func<T?, CancellationToken, Task> processMessageAsync, ReceiveMessageRequest messageRequest, CancellationToken cancellationToken)
     {
         var receivedMessages = await sqsService.ReceiveMessageAsync(messageRequest, cancellationToken).ConfigureAwait(false);
+
+        var queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
 
         LogMessageReceived(logger, receivedMessages.Messages.Count, queueUrl);
 #if NET6_0_OR_GREATER
@@ -156,6 +161,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     {
         try
         {
+            var queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
             await sqsService.DeleteMessageAsync(queueUrl, message.ReceiptHandle, token).ConfigureAwait(false);
 
             LogMessageDeleted(logger, message.MessageId, queueUrl);
