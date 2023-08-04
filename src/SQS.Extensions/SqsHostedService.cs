@@ -37,7 +37,7 @@ public abstract partial class SqsHostedService<T> : BackgroundService
     {
         try
         {
-            LogHostServiceStarted(Logger);
+            LogHostServiceStarted(Logger, GetType().Name);
             var pump = await messagePumpFactory.CreateAsync<T>(MessagePumpConfiguration, cancellationToken);
 
             while (!cancellationToken.IsCancellationRequested)
@@ -68,8 +68,8 @@ public abstract partial class SqsHostedService<T> : BackgroundService
     /// </value>
     protected ILogger Logger { get ; }
 
-    [LoggerMessage(EventId = 101, Level = LogLevel.Information, Message = "Sqs Hosted Service is starting")]
-    private static partial void LogHostServiceStarted(ILogger logger);
+    [LoggerMessage(EventId = 101, Level = LogLevel.Information, Message = "Sqs Hosted Service: {HostServiceName} is starting")]
+    private static partial void LogHostServiceStarted(ILogger logger, string hostServiceName);
 
     [LoggerMessage(EventId = 102, Level = LogLevel.Error, Message = "[MessagePump] There is an error while processing messages")]
     private static partial void LogPumpError(ILogger logger, Exception exc);
