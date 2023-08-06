@@ -42,7 +42,7 @@ app.MapPost("/SendMessageToQueue", async (
     CancellationToken cancellationToken) =>
 {
     // Do your stuff
-    await sqsDispatcher.QueueAsync(request, Constants.QUEUE_NAME_1, cancellationToken);
+    await sqsDispatcher.QueueAsync(request, Constants.QUEUE_NAME_1, 0, cancellationToken);
     // await sqsDispatcher.QueueAsync(request, Constants.QUEUE_NAME_2, cancellationToken);
 
     return Results.NoContent();

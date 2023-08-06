@@ -37,49 +37,20 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public Task QueueAsync<T>(T obj, string queueName, CancellationToken cancellationToken = default)
-    {
-        return QueueAsync(obj, queueName, 0, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public Task QueueAsync<T>(T obj, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
     {
         return QueueAsync(messageSerializer.Serialize(obj), queueName, delaySeconds, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task QueueAsync<T>(T[] obj, string queueName, CancellationToken cancellationToken = default)
-    {
-        return QueueAsync(obj, queueName, 0, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public Task QueueAsync<T>(List<T> obj, string queueName, CancellationToken cancellationToken = default)
-    {
-        return QueueAsync(obj, queueName, 0, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public Task QueueAsync<T>(T[] obj, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
-    {
-        var serializedObjects = new string[obj.Length];
-
-        for (var i = 0; i < obj.Length; i++)
-            serializedObjects[i] = messageSerializer.Serialize(obj[i]);
-
-        return QueueAsync(serializedObjects, queueName, delaySeconds, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public Task QueueAsync<T>(List<T> obj, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
+    public Task QueueBatchAsync<T>(IList<T> obj, string queueName, int delaySeconds = 10, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
     {
         var serializedObjects = new string[obj.Count];
 
         for (var i = 0; i < obj.Count; i++)
             serializedObjects[i] = messageSerializer.Serialize(obj[i]);
 
-        return QueueAsync(serializedObjects, queueName, delaySeconds, cancellationToken);
+        return QueueBatchAsync(serializedObjects, queueName, delaySeconds, maxNumberOfMessagesForBatch, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -105,12 +76,12 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public async Task QueueAsync(string[] serializedObject, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
+    public async Task QueueBatchAsync(IList<string> serializedObject, string queueName, int delaySeconds, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
     {
-        var requests = new SendMessageRequest[serializedObject.Length];
+        var requests = new SendMessageRequest[serializedObject.Count];
         var queueUrl = await sqsHelper.GetQueueUrlAsync(queueName);
 
-        for (var i = 0; i < serializedObject.Length; i++)
+        for (var i = 0; i < serializedObject.Count; i++)
         {
             requests[i] = new SendMessageRequest
             {
@@ -120,7 +91,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
             };
         }
 
-        await QueueAsync(requests, 10, cancellationToken);
+        await QueueBatchAsync(requests, maxNumberOfMessagesForBatch, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -133,7 +104,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public async Task QueueAsync(SendMessageRequest[] requests, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
+    public async Task QueueBatchAsync(IList<SendMessageRequest> requests, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
     {
         // Li gruppo per coda
         foreach (var group in requests.GroupBy(x => x.QueueUrl))

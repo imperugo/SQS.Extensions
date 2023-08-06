@@ -50,7 +50,7 @@ public class SqsDispatcherTests
 
         var totalNumberOfRequest = (numberOfMessages + 10 - 1) / 10;
 
-        await sut.QueueAsync(messages, "my-super-queue");
+        await sut.QueueBatchAsync(messages, "my-super-queue");
 
         amazonSqsMock.Verify(x => x.SendMessageBatchAsync(It.Is<string>(x => x == Constants.DEFAULT_TEST_QUEUE_URL), It.IsAny<List<SendMessageBatchRequestEntry>>(), It.IsAny<CancellationToken>()), Times.Exactly(totalNumberOfRequest));
     }
