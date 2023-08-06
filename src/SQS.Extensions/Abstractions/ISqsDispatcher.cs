@@ -133,7 +133,8 @@ public interface ISqsDispatcher
     /// Queue a set of object into the SQS queue
     /// </summary>
     /// <param name="requests">An array of <see cref="SendMessageRequest"/>.</param>
+    /// <param name="maxNumberOfMessagesForBatch">The max number of messages to send with a single request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The response from the SendMessage service method, as returned by SQS.</returns>
-    Task QueueAsync(SendMessageRequest[] requests, CancellationToken cancellationToken = default);
+    Task QueueAsync(SendMessageRequest[] requests, int maxNumberOfMessagesForBatch = 10 ,CancellationToken cancellationToken = default);
 }

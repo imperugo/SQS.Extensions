@@ -66,7 +66,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         var serializedObjects = new string[obj.Length];
 
         for (var i = 0; i < obj.Length; i++)
-            serializedObjects[i] = messageSerializer.Serialize(obj);
+            serializedObjects[i] = messageSerializer.Serialize(obj[i]);
 
         return QueueAsync(serializedObjects, queueName, delaySeconds, cancellationToken);
     }
@@ -77,7 +77,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         var serializedObjects = new string[obj.Count];
 
         for (var i = 0; i < obj.Count; i++)
-            serializedObjects[i] = messageSerializer.Serialize(obj);
+            serializedObjects[i] = messageSerializer.Serialize(obj[i]);
 
         return QueueAsync(serializedObjects, queueName, delaySeconds, cancellationToken);
     }
@@ -120,7 +120,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
             };
         }
 
-        await QueueAsync(requests, cancellationToken);
+        await QueueAsync(requests, 10, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -133,11 +133,8 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public async Task QueueAsync(SendMessageRequest[] requests, CancellationToken cancellationToken = default)
+    public async Task QueueAsync(SendMessageRequest[] requests, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
     {
-        // 10 è il numero massimo di messaggi che posso inviare a SQS in una singola richiesta
-        const int maxNumberOfMessages = 10;
-
         // Li gruppo per coda
         foreach (var group in requests.GroupBy(x => x.QueueUrl))
         {
@@ -145,9 +142,9 @@ internal sealed class SqsDispatcher : ISqsDispatcher
 
             // Li gruppo per 10 che è il massimo numero di messaggi che si possono inviare in una singola richiesta
 #if NET6_0 || NET7_0
-            await Parallel.ForEachAsync(group.ToList().Split(maxNumberOfMessages), cancellationToken, async (messages, token) =>
+            await Parallel.ForEachAsync(group.ToList().Split(maxNumberOfMessagesForBatch), cancellationToken, async (messages, token) =>
             {
-                var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessages);
+                var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessagesForBatch);
 
                 foreach (var message in messages)
                 {
@@ -162,14 +159,14 @@ internal sealed class SqsDispatcher : ISqsDispatcher
             })
                 .ConfigureAwait(false);
 #else
-            var groupedMessages = group.ToList().Split(maxNumberOfMessages).ToList();
+            var groupedMessages = group.ToList().Split(maxNumberOfMessagesForBatch).ToList();
 
             var tasks = new Task[groupedMessages.Count];
 
             for (var i = 0; i < groupedMessages.Count; i++)
             {
                 var messages = groupedMessages[i];
-                var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessages);
+                var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessagesForBatch);
 
                 foreach (var message in messages)
                 {
