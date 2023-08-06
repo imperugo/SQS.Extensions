@@ -108,12 +108,13 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     public async Task QueueAsync(string[] serializedObject, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
     {
         var requests = new SendMessageRequest[serializedObject.Length];
+        var queueUrl = await sqsHelper.GetQueueUrlAsync(queueName);
 
         for (var i = 0; i < serializedObject.Length; i++)
         {
             requests[i] = new SendMessageRequest
             {
-                QueueUrl = await sqsHelper.GetQueueUrlAsync(queueName),
+                QueueUrl = queueUrl,
                 MessageBody = serializedObject[i],
                 DelaySeconds = delaySeconds
             };
@@ -140,10 +141,12 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         // Li gruppo per coda
         foreach (var group in requests.GroupBy(x => x.QueueUrl))
         {
+            var queueUrl = group.First().QueueUrl;
+
+            // Li gruppo per 10 che è il massimo numero di messaggi che si possono inviare in una singola richiesta
 #if NET6_0 || NET7_0
             await Parallel.ForEachAsync(group.ToList().Split(maxNumberOfMessages), cancellationToken, async (messages, token) =>
             {
-                var queueUrl = await sqsHelper.GetQueueUrlAsync(messages[0].QueueUrl);
                 var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessages);
 
                 foreach (var message in messages)
@@ -166,8 +169,6 @@ internal sealed class SqsDispatcher : ISqsDispatcher
             for (var i = 0; i < groupedMessages.Count; i++)
             {
                 var messages = groupedMessages[i];
-
-                var queueUrl = await sqsHelper.GetQueueUrlAsync(messages[0].QueueUrl);
                 var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessages);
 
                 foreach (var message in messages)
