@@ -37,13 +37,13 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public Task QueueAsync<T>(T obj, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
+    public Task QueueAsync<T>(T obj, string queueName, int delaySeconds = 0, CancellationToken cancellationToken = default)
     {
         return QueueAsync(messageSerializer.Serialize(obj), queueName, delaySeconds, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task QueueBatchAsync<T>(IList<T> obj, string queueName, int delaySeconds = 10, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
+    public Task QueueBatchAsync<T>(IList<T> obj, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
     {
         var serializedObjects = new string[obj.Count];
 
@@ -54,13 +54,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public Task QueueAsync(string serializedObject, string queueName, CancellationToken cancellationToken = default)
-    {
-        return QueueAsync(serializedObject, queueName, 0, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task QueueAsync(string serializedObject, string queueName, int delaySeconds, CancellationToken cancellationToken = default)
+    private async Task QueueAsync(string serializedObject, string queueName, int delaySeconds = 0, CancellationToken cancellationToken = default)
     {
         var request = new SendMessageRequest
         {
@@ -76,7 +70,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public async Task QueueBatchAsync(IList<string> serializedObject, string queueName, int delaySeconds, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
+    private async Task QueueBatchAsync(IList<string> serializedObject, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
     {
         var requests = new SendMessageRequest[serializedObject.Count];
         var queueUrl = await sqsHelper.GetQueueUrlAsync(queueName);
