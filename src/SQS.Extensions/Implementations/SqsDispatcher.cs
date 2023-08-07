@@ -37,50 +37,33 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public Task QueueAsync<T>(T obj, string queueName, int delaySeconds = 0, CancellationToken cancellationToken = default)
-    {
-        return QueueAsync(messageSerializer.Serialize(obj), queueName, delaySeconds, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public Task QueueBatchAsync<T>(IList<T> obj, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
-    {
-        var serializedObjects = new string[obj.Count];
-
-        for (var i = 0; i < obj.Count; i++)
-            serializedObjects[i] = messageSerializer.Serialize(obj[i]);
-
-        return QueueBatchAsync(serializedObjects, queueName, delaySeconds, maxNumberOfMessagesForBatch, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    private async Task QueueAsync(string serializedObject, string queueName, int delaySeconds = 0, CancellationToken cancellationToken = default)
+    public async Task QueueAsync<T>(T obj, string queueName, int delaySeconds = 0, CancellationToken cancellationToken = default)
     {
         var request = new SendMessageRequest
         {
             QueueUrl = await sqsHelper.GetQueueUrlAsync(queueName),
-            MessageBody = serializedObject,
+            MessageBody = messageSerializer.Serialize(obj),
             DelaySeconds = delaySeconds
         };
 
         if (logger.IsEnabled(LogLevel.Debug))
-            logger.LogDebug("Pushing message into SQS Queue: {QueueName} with this value {SerializedValue}", queueName, serializedObject);
+            logger.LogDebug("Pushing message into SQS Queue: {QueueName}", queueName);
 
         await SqsClient.SendMessageAsync(request, cancellationToken);
     }
 
     /// <inheritdoc/>
-    private async Task QueueBatchAsync(IList<string> serializedObject, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
+    public async Task QueueBatchAsync<T>(IList<T> obj, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
     {
-        var requests = new SendMessageRequest[serializedObject.Count];
+        var requests = new SendMessageRequest[obj.Count];
         var queueUrl = await sqsHelper.GetQueueUrlAsync(queueName);
 
-        for (var i = 0; i < serializedObject.Count; i++)
+        for (var i = 0; i < obj.Count; i++)
         {
             requests[i] = new SendMessageRequest
             {
                 QueueUrl = queueUrl,
-                MessageBody = serializedObject[i],
+                MessageBody = messageSerializer.Serialize(obj[i]),
                 DelaySeconds = delaySeconds
             };
         }
@@ -124,13 +107,10 @@ internal sealed class SqsDispatcher : ISqsDispatcher
             })
                 .ConfigureAwait(false);
 #else
-            var groupedMessages = group.ToList().Split(maxNumberOfMessagesForBatch).ToList();
+            var tasks = new List<Task>(requests.Count/ maxNumberOfMessagesForBatch);
 
-            var tasks = new Task[groupedMessages.Count];
-
-            for (var i = 0; i < groupedMessages.Count; i++)
+            foreach (var messages in group.ToList().Split(maxNumberOfMessagesForBatch))
             {
-                var messages = groupedMessages[i];
                 var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessagesForBatch);
 
                 foreach (var message in messages)
@@ -142,7 +122,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
                     entries.Add(entry);
                 }
 
-                tasks[i] = SqsClient.SendMessageBatchAsync(queueUrl, entries, cancellationToken);
+                tasks.Add(SqsClient.SendMessageBatchAsync(queueUrl, entries, cancellationToken));
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
