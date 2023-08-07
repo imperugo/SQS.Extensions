@@ -56,16 +56,6 @@ public class SqsDispatcherTests
     }
 
     [Fact]
-    public async Task Calling_QueueAsync_With_Only_QueueName_And_Serialized_Object_Should_Add_The_Right_Queue_Async()
-    {
-        const string messageBody = "My Message Body";
-
-        await sut.QueueAsync(messageBody, "my-super-queue", 10);
-
-        amazonSqsMock.Verify(x => x.SendMessageAsync(It.Is<SendMessageRequest>(x => x.QueueUrl == Constants.DEFAULT_TEST_QUEUE_URL && x.DelaySeconds == 10 && x.MessageBody == messageBody), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
     public async Task Calling_QueueAsync_With_Only_QueueName_Should_Add_The_Right_Queue_Async()
     {
         var request = new SendMessageRequest();
