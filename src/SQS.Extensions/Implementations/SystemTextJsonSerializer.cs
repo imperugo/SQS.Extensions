@@ -16,13 +16,13 @@ public sealed partial class SystemTextJsonSerializer : IMessageSerializer
 {
     private readonly IServiceProvider? applicationServices;
     private readonly ILogger<SystemTextJsonSerializer> logger;
-    private readonly JsonSerializerOptions defaultSerializer = SerializationOptions.Default;
+    private readonly JsonSerializerOptions defaultSerializer;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemTextJsonSerializer"/> class.
     /// </summary>
-    public SystemTextJsonSerializer(ILogger<SystemTextJsonSerializer> logger)
-        : this(null, logger)
+    public SystemTextJsonSerializer(ILogger<SystemTextJsonSerializer> logger, JsonSerializerOptions defaultSerializer)
+        : this(null, defaultSerializer, logger)
     {
     }
 
@@ -30,11 +30,13 @@ public sealed partial class SystemTextJsonSerializer : IMessageSerializer
     /// Initializes a new instance of the <see cref="SystemTextJsonSerializer"/> class.
     /// </summary>
     /// <param name="applicationServices">An instance of <see cref="IServiceProvider"/>.</param>
+    /// <param name="defaultSerializer">The serialization options.</param>
     /// <param name="logger">An instance of <see cref="ILogger{SystemTextJsonSerializer}"/>.</param>
-    public SystemTextJsonSerializer(IServiceProvider? applicationServices, ILogger<SystemTextJsonSerializer> logger)
+    public SystemTextJsonSerializer(IServiceProvider? applicationServices, JsonSerializerOptions defaultSerializer, ILogger<SystemTextJsonSerializer> logger)
     {
         this.applicationServices = applicationServices;
         this.logger = logger;
+        this.defaultSerializer ??= SerializationOptions.Default;
     }
 
     /// <inheritdoc/>

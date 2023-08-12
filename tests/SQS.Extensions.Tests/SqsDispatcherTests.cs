@@ -8,31 +8,31 @@ using SQS.Extensions.Implementations;
 
 using Microsoft.Extensions.Logging;
 
-using Moq;
+using NSubstitute;
 
 namespace AWS.SDK.SQS.Extensions.Tests;
 
 public class SqsDispatcherTests
 {
-    private readonly Mock<IAmazonSQS> amazonSqsMock;
-    private readonly Mock<ILogger<SqsDispatcher>> logger = new();
+    private readonly IAmazonSQS amazonSqsMock;
+    private readonly ILogger<SqsDispatcher> logger = Substitute.For<ILogger<SqsDispatcher>>();
     private readonly SqsDispatcher sut;
 
     public SqsDispatcherTests()
     {
-        amazonSqsMock = new Mock<IAmazonSQS>();
-        var serviceProviderMock = new Mock<ISqsQueueHelper>();
-        var messageSerializerMock = new Mock<IMessageSerializer>();
+        amazonSqsMock = Substitute.For<IAmazonSQS>();
+        var serviceProviderMock = Substitute.For<ISqsQueueHelper>();
+        var messageSerializerMock = Substitute.For<IMessageSerializer>();
 
         serviceProviderMock
-            .Setup(x => x.GetQueueUrlAsync(It.IsAny<string>()))
-            .ReturnsAsync(Constants.DEFAULT_TEST_QUEUE_URL);
+            .GetQueueUrlAsync(Arg.Any<string>())
+            .Returns(Constants.DEFAULT_TEST_QUEUE_URL);
 
         messageSerializerMock
-            .Setup(x => x.Serialize(It.IsAny<It.IsAnyType>()))
+            .Serialize(Arg.Any<object>())
             .Returns("{}");
 
-        sut = new SqsDispatcher(amazonSqsMock.Object, serviceProviderMock.Object, logger.Object, messageSerializerMock.Object);
+        sut = new SqsDispatcher(amazonSqsMock, serviceProviderMock, logger, messageSerializerMock);
     }
 
     [Theory]
@@ -52,7 +52,11 @@ public class SqsDispatcherTests
 
         await sut.QueueBatchAsync(messages, "my-super-queue");
 
-        amazonSqsMock.Verify(x => x.SendMessageBatchAsync(It.Is<string>(x => x == Constants.DEFAULT_TEST_QUEUE_URL), It.IsAny<List<SendMessageBatchRequestEntry>>(), It.IsAny<CancellationToken>()), Times.Exactly(totalNumberOfRequest));
+        await amazonSqsMock.Received(totalNumberOfRequest).SendMessageBatchAsync(
+            Arg.Is<string>(x => x == Constants.DEFAULT_TEST_QUEUE_URL),
+            Arg.Any<List<SendMessageBatchRequestEntry>>(),
+            Arg.Any<CancellationToken>()
+        );
     }
 
     [Fact]
@@ -63,7 +67,10 @@ public class SqsDispatcherTests
 
         await sut.QueueAsync(request, default);
 
-        amazonSqsMock.Verify(x => x.SendMessageAsync(It.Is<SendMessageRequest>(x => x.QueueUrl == Constants.DEFAULT_TEST_QUEUE_URL), It.IsAny<CancellationToken>()), Times.Once);
+        await amazonSqsMock.Received(1).SendMessageAsync(
+            Arg.Is<SendMessageRequest>(x => x.QueueUrl == Constants.DEFAULT_TEST_QUEUE_URL),
+            Arg.Any<CancellationToken>()
+        );
     }
 
     [Fact]
@@ -74,7 +81,10 @@ public class SqsDispatcherTests
 
         await sut.QueueAsync(request);
 
-        amazonSqsMock.Verify(x => x.SendMessageAsync(It.Is<SendMessageRequest>(x => x.QueueUrl == Constants.DEFAULT_TEST_QUEUE_URL), It.IsAny<CancellationToken>()), Times.Once);
+        await amazonSqsMock.Received(1).SendMessageAsync(
+            Arg.Is<SendMessageRequest>(x => x.QueueUrl == Constants.DEFAULT_TEST_QUEUE_URL),
+            Arg.Any<CancellationToken>()
+        );
     }
 
     private class MockRequest

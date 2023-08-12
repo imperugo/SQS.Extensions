@@ -9,36 +9,37 @@ using SQS.Extensions.Implementations;
 
 using Microsoft.Extensions.Logging;
 
-using Moq;
+using NSubstitute;
 
 namespace AWS.SDK.SQS.Extensions.Tests;
 
-public class SqsMessagePumpTests : IAsyncDisposable
+public class SqsMessagePumpTests : IAsyncDisposable, IDisposable
 {
-    private readonly Mock<IAmazonSQS> amazonSqsMock;
-    private readonly Mock<ILogger> loggerMock;
-    private readonly Mock<ISqsQueueHelper> sqsQueueHelperMock;
-    private readonly Mock<IMessageSerializer> messageSerializerMock;
+    private bool isDisposed;
+    private readonly IAmazonSQS amazonSqsMock;
+    private readonly ILogger loggerMock;
+    private readonly ISqsQueueHelper sqsQueueHelperMock;
+    private readonly IMessageSerializer messageSerializerMock;
     private readonly MessagePumpConfiguration configuration;
 
     private readonly SqsMessagePump<string> sut;
 
     public SqsMessagePumpTests()
     {
-        amazonSqsMock = new Mock<IAmazonSQS>();
-        loggerMock = new Mock<ILogger>();
-        sqsQueueHelperMock = new Mock<ISqsQueueHelper>();
-        messageSerializerMock = new Mock<IMessageSerializer>();
+        amazonSqsMock = Substitute.For<IAmazonSQS>();
+        loggerMock = Substitute.For<ILogger>();
+        sqsQueueHelperMock = Substitute.For<ISqsQueueHelper>();
+        messageSerializerMock = Substitute.For<IMessageSerializer>();
         configuration = new MessagePumpConfiguration("my-super-queue")
         {
             MaxConcurrentOperation = 10
         };
 
         sqsQueueHelperMock
-            .Setup(x => x.GetQueueUrlAsync(It.IsAny<string>()))
-            .ReturnsAsync(Constants.DEFAULT_TEST_QUEUE_URL);
+            .GetQueueUrlAsync(Arg.Any<string>())
+            .Returns(Constants.DEFAULT_TEST_QUEUE_URL);
 
-        sut = new SqsMessagePump<string>(amazonSqsMock.Object, loggerMock.Object, configuration, sqsQueueHelperMock.Object, messageSerializerMock.Object);
+        sut = new SqsMessagePump<string>(amazonSqsMock, loggerMock, configuration, sqsQueueHelperMock, messageSerializerMock);
     }
 
     [Fact]
@@ -48,22 +49,21 @@ public class SqsMessagePumpTests : IAsyncDisposable
 
         await sut.InitAsync();
 
-        amazonSqsMock
-            .Verify(x => x.PurgeQueueAsync(Constants.DEFAULT_TEST_QUEUE_URL, It.IsAny<CancellationToken>()), Times.Once);
+        await amazonSqsMock.Received(1).PurgeQueueAsync(Constants.DEFAULT_TEST_QUEUE_URL, Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Calling_PumpAsync_Should_Call_With_MaxConcurrentOperation_Equal_To_10_Should_Call_ReceiveMessageAsync_Just_One_Time_Async()
     {
-        amazonSqsMock
-            .Setup(x => x.ReceiveMessageAsync(It.IsAny<ReceiveMessageRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ReceiveMessageResponse { Messages = new List<Message>(), HttpStatusCode = HttpStatusCode.OK });
+        amazonSqsMock.ReceiveMessageAsync(Arg.Any<ReceiveMessageRequest>(), Arg.Any<CancellationToken>()).Returns(new ReceiveMessageResponse { Messages = new List<Message>(), HttpStatusCode = HttpStatusCode.OK });
 
         await sut.PumpAsync((_, _) => Task.CompletedTask);
 
         Func<ReceiveMessageRequest?, bool> equal = x => x is { MaxNumberOfMessages: 10, WaitTimeSeconds: 20, QueueUrl: Constants.DEFAULT_TEST_QUEUE_URL };
 
-        amazonSqsMock.Verify(x => x.ReceiveMessageAsync(It.Is<ReceiveMessageRequest?>(x => equal(x)), It.IsAny<CancellationToken>()), Times.Once);
+        await amazonSqsMock.Received(1).ReceiveMessageAsync(Arg.Is<ReceiveMessageRequest>(
+            x => x != null && equal(x)
+        ), Arg.Any<CancellationToken>());
     }
 
     //TODO: Verify expired message
@@ -73,5 +73,35 @@ public class SqsMessagePumpTests : IAsyncDisposable
     public ValueTask DisposeAsync()
     {
         return sut.DisposeAsync();
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    // The bulk of the clean-up code is implemented in Dispose(bool)
+    protected virtual void Dispose(bool disposing)
+    {
+        if (isDisposed)
+            return;
+
+        if (disposing)
+        {
+            // free managed resources
+            amazonSqsMock.Dispose();
+        }
+
+        isDisposed = true;
+    }
+
+    // NOTE: Leave out the finalizer altogether if this class doesn't
+    // own unmanaged resources, but leave the other methods
+    // exactly as they are.
+    ~SqsMessagePumpTests()
+    {
+        // Finalizer calls Dispose(false)
+        Dispose(false);
     }
 }

@@ -67,9 +67,11 @@ public static class ServiceCollectionExtensions
     /// <param name="configuration">The AWS Configuration.</param>
     /// <typeparam name="TQueueHelper">The queue helper implementation type.</typeparam>
     /// <typeparam name="TSerializer">The serializer implementation type.</typeparam>
-    public static void AddSqsConsumerServices<TQueueHelper, TSerializer>(this IServiceCollection serviceCollection, Func<AwsConfiguration> configuration)
-        where TSerializer : class, IMessageSerializer
-        where TQueueHelper : class, ISqsQueueHelper
+    public static void AddSqsConsumerServices<TQueueHelper, TSerializer>(
+        this IServiceCollection serviceCollection,
+        Func<AwsConfiguration> configuration)
+            where TSerializer : class, IMessageSerializer
+            where TQueueHelper : class, ISqsQueueHelper
 
     {
         serviceCollection.AddSingleton(configuration());
