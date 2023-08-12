@@ -39,12 +39,8 @@ internal sealed class SqsDispatcher : ISqsDispatcher
     /// <inheritdoc/>
     public async Task QueueAsync<T>(T obj, string queueName, int delaySeconds = 0, CancellationToken cancellationToken = default)
     {
-        var request = new SendMessageRequest
-        {
-            QueueUrl = await sqsHelper.GetQueueUrlAsync(queueName),
-            MessageBody = messageSerializer.Serialize(obj),
-            DelaySeconds = delaySeconds
-        };
+        var queueUrl = await sqsHelper.GetQueueUrlAsync(queueName);
+        var request = CreateSendMessageRequest(obj, queueUrl, delaySeconds);
 
         if (logger.IsEnabled(LogLevel.Debug))
             logger.LogDebug("Pushing message into SQS Queue: {QueueName}", queueName);
@@ -59,14 +55,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         var queueUrl = await sqsHelper.GetQueueUrlAsync(queueName);
 
         for (var i = 0; i < obj.Count; i++)
-        {
-            requests[i] = new SendMessageRequest
-            {
-                QueueUrl = queueUrl,
-                MessageBody = messageSerializer.Serialize(obj[i]),
-                DelaySeconds = delaySeconds
-            };
-        }
+            requests[i] = CreateSendMessageRequest(obj[i], queueUrl, delaySeconds);
 
         await QueueBatchAsync(requests, maxNumberOfMessagesForBatch, cancellationToken);
     }
@@ -128,5 +117,15 @@ internal sealed class SqsDispatcher : ISqsDispatcher
             await Task.WhenAll(tasks).ConfigureAwait(false);
 #endif
         }
+    }
+
+    private SendMessageRequest CreateSendMessageRequest<T>(T obj, string queueName, int delaySeconds = 0)
+    {
+        return new SendMessageRequest
+        {
+            QueueUrl = queueName,
+            MessageBody = messageSerializer.Serialize(obj),
+            DelaySeconds = delaySeconds
+        };
     }
 }
