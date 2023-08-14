@@ -32,6 +32,14 @@ public abstract partial class SqsHostedService<T> : BackgroundService
     /// </summary>
     protected abstract MessagePumpConfiguration MessagePumpConfiguration { get; }
 
+    /// <summary>
+    /// Gets a value indicating whether the background service is enabled.
+    /// </summary>
+    /// <value>
+    ///   <c>true</c> if enabled; otherwise, <c>false</c>.
+    /// </value>
+    protected virtual bool IsEnabled => true;
+
     /// <inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -42,13 +50,16 @@ public abstract partial class SqsHostedService<T> : BackgroundService
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                try
+                if (IsEnabled)
                 {
-                    await pump.PumpAsync(ProcessMessageFunc, cancellationToken);
-                }
-                catch (Exception e)
-                {
-                    LogPumpError(Logger, e);
+                    try
+                    {
+                        await pump.PumpAsync(ProcessMessageFunc, cancellationToken);
+                    }
+                    catch (Exception e)
+                    {
+                        LogPumpError(Logger, e);
+                    }
                 }
 
                 await Task.Delay(MessagePumpConfiguration.BatchDelay, cancellationToken);
