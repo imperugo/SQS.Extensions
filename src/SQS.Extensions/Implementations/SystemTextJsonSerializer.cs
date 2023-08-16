@@ -59,13 +59,13 @@ public sealed partial class SystemTextJsonSerializer : IMessageSerializer
             : JsonSerializer.Deserialize<T>(serializedObject, defaultSerializer);
 
         if (serializedObject?.Length > 0 && result == null)
-            LogDeserializingProblen(logger, serializedObject, typeof(T));
+            LogDeserializingProblem(logger, serializedObject, typeof(T));
 
         return result;
     }
 
     [LoggerMessage(EventId = 101, Level = LogLevel.Warning, Message = "There was an error deserializing {serializedObject} to {type}")]
-    private static partial void LogDeserializingProblen(
+    private static partial void LogDeserializingProblem(
         ILogger logger,
         string serializedObject,
         Type? type);
