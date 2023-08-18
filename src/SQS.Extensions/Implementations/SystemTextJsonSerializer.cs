@@ -32,11 +32,11 @@ public sealed partial class SystemTextJsonSerializer : IMessageSerializer
     /// <param name="applicationServices">An instance of <see cref="IServiceProvider"/>.</param>
     /// <param name="defaultSerializer">The serialization options.</param>
     /// <param name="logger">An instance of <see cref="ILogger{SystemTextJsonSerializer}"/>.</param>
-    public SystemTextJsonSerializer(IServiceProvider? applicationServices, JsonSerializerOptions defaultSerializer, ILogger<SystemTextJsonSerializer> logger)
+    public SystemTextJsonSerializer(IServiceProvider? applicationServices, JsonSerializerOptions? defaultSerializer, ILogger<SystemTextJsonSerializer> logger)
     {
         this.applicationServices = applicationServices;
         this.logger = logger;
-        this.defaultSerializer ??= SerializationOptions.Default;
+        this.defaultSerializer = defaultSerializer ?? SerializationOptions.Default;
     }
 
     /// <inheritdoc/>
@@ -58,7 +58,7 @@ public sealed partial class SystemTextJsonSerializer : IMessageSerializer
             ? JsonSerializer.Deserialize(serializedObject, serializationContext)
             : JsonSerializer.Deserialize<T>(serializedObject, defaultSerializer);
 
-        if (serializedObject?.Length > 0 && result == null)
+        if (serializedObject.Length > 0 && result == null)
             LogDeserializingProblem(logger, serializedObject, typeof(T));
 
         return result;
