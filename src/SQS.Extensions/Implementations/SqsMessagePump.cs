@@ -161,7 +161,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
     private async Task ProcessMessageAsync(Func<T?, CancellationToken, Task> processMessageAsync, Message message, TagList tags, CancellationToken cancellationToken)
     {
-        if (!IsMessageExpired(message))
+        if (!IsMessageExpired(message, tags))
         {
             try
             {
@@ -180,8 +180,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         // If processing failed, the onError handler will have moved the message
         // to a retry queue.
         await DeleteMessageAndBodyIfRequiredAsync(message, cancellationToken).ConfigureAwait(false);
-        tags.Add(new KeyValuePair<string, object?>(MeterTags.FailureType, "Message Expired."));
-        Meters.TotalFailures.Add(1, tags);
+        Meters.TotalDeleted.Add(1, tags);
     }
 
     private async Task DeleteMessageAndBodyIfRequiredAsync(Message message, CancellationToken token)
@@ -212,7 +211,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         return result + clockOffset;
     }
 
-    private bool IsMessageExpired(Message message)
+    private bool IsMessageExpired(Message message, TagList tags)
     {
         var ttl = TimeSpan.MaxValue;
 
@@ -231,6 +230,9 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
         // Message has expired.
         LogExpiredMessage(logger, message.MessageId, utcNow - expiresAt, expiresAt);
+
+        tags.Add(new KeyValuePair<string, object?>(MeterTags.FailureType, "Message Expired."));
+        Meters.TotalExpired.Add(1, tags);
 
         return true;
     }
