@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using Amazon.SQS;
 using Amazon.SQS.Model;
 
@@ -5,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 using SQS.Extensions.Abstractions;
 using SQS.Extensions.Configurations;
+using SQS.Extensions.OpenTelemetry.Metrics;
 
 namespace SQS.Extensions.Implementations;
 
@@ -130,15 +133,25 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         var queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
 
         LogMessageReceived(logger, receivedMessages.Messages.Count, queueUrl);
+
+        var tags = new TagList(new KeyValuePair<string, object>[]
+            {
+                new(MeterTags.QueueUrl, queueUrl),
+                new(MeterTags.MessageType, typeof(T))
+            }
+            .AsSpan()!);
+
+        Meters.TotalFetched.Add(receivedMessages.Messages.Count, tags);
+
 #if NET6_0_OR_GREATER
-        await Parallel.ForEachAsync(receivedMessages.Messages, cancellationToken, async (message, token) => await ProcessMessageAsync(processMessageAsync, message, token).ConfigureAwait(false));
+        await Parallel.ForEachAsync(receivedMessages.Messages, cancellationToken, async (message, token) => await ProcessMessageAsync(processMessageAsync, message, tags, token).ConfigureAwait(false));
 #else
         var tasks = new Task[receivedMessages.Messages.Count];
 
         for (var i = 0; i < receivedMessages.Messages.Count; i++)
         {
             var message = receivedMessages.Messages[i];
-            tasks[i] = ProcessMessageAsync(processMessageAsync, message, cancellationToken);
+            tasks[i] = ProcessMessageAsync(processMessageAsync, message, tags, cancellationToken);
         }
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -146,15 +159,29 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
     }
 
-    private async Task ProcessMessageAsync(Func<T?, CancellationToken, Task> processMessageAsync, Message message, CancellationToken cancellationToken)
+    private async Task ProcessMessageAsync(Func<T?, CancellationToken, Task> processMessageAsync, Message message, TagList tags, CancellationToken cancellationToken)
     {
         if (!IsMessageExpired(message))
-            await processMessageAsync(messageSerializer.Deserialize<T>(message.Body), messageProcessingCancellationTokenSource.Token).ConfigureAwait(false);
+        {
+            try
+            {
+                await processMessageAsync(messageSerializer.Deserialize<T>(message.Body), messageProcessingCancellationTokenSource.Token).ConfigureAwait(false);
+                Meters.TotalProcessedSuccessfully.Add(1, tags);
+            }
+            catch (Exception ex)
+            {
+                tags.Add(new KeyValuePair<string, object?>(MeterTags.FailureType, ex.GetType()));
+                Meters.TotalFailures.Add(1, tags);
+                throw;
+            }
+        }
 
         // Always delete the message from the queue.
         // If processing failed, the onError handler will have moved the message
         // to a retry queue.
         await DeleteMessageAndBodyIfRequiredAsync(message, cancellationToken).ConfigureAwait(false);
+        tags.Add(new KeyValuePair<string, object?>(MeterTags.FailureType, "Message Expired."));
+        Meters.TotalFailures.Add(1, tags);
     }
 
     private async Task DeleteMessageAndBodyIfRequiredAsync(Message message, CancellationToken token)

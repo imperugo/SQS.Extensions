@@ -27,10 +27,12 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.SQS" Version="3.7.200.19" />
     <PackageReference Include="System.Text.Json" Version="7.0.3" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
+
 
 </Project>
