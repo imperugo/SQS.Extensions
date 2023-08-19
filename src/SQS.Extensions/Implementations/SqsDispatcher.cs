@@ -12,7 +12,7 @@ namespace SQS.Extensions.Implementations;
 /// <summary>
 /// Jil implementation of <see cref="ISqsDispatcher"/>
 /// </summary>
-internal sealed class SqsDispatcher : ISqsDispatcher
+internal sealed partial class SqsDispatcher : ISqsDispatcher
 {
     private readonly ISqsQueueHelper sqsHelper;
     private readonly ILogger<SqsDispatcher> logger;
@@ -42,8 +42,7 @@ internal sealed class SqsDispatcher : ISqsDispatcher
         var queueUrl = await sqsHelper.GetQueueUrlAsync(queueName);
         var request = CreateSendMessageRequest(obj, queueUrl, delaySeconds);
 
-        if (logger.IsEnabled(LogLevel.Debug))
-            logger.LogDebug("Pushing message into SQS Queue: {QueueName}", queueName);
+        LogPushingMessage(logger, queueName);
 
         await SqsClient.SendMessageAsync(request, cancellationToken);
     }
@@ -128,4 +127,9 @@ internal sealed class SqsDispatcher : ISqsDispatcher
             DelaySeconds = delaySeconds
         };
     }
+
+    [LoggerMessage(EventId = 101, Level = LogLevel.Error, Message = "Pushing message into SQS Queue: {QueueName}")]
+    private static partial void LogPushingMessage(
+        ILogger logger,
+        string queueName);
 }
