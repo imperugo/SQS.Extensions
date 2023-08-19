@@ -11,7 +11,7 @@ namespace SQS.Extensions.Implementations;
 /// <summary>
 /// Default implementation of <see cref="ISqsQueueHelper"/>
 /// </summary>
-internal sealed class DefaultSqsQueueHelper : ISqsQueueHelper
+public class DefaultSqsQueueHelper : ISqsQueueHelper
 {
     private static readonly ConcurrentDictionary<string, string> queueUrlsCache = new ();
     private readonly AwsConfiguration awsConfiguration;
@@ -27,7 +27,7 @@ internal sealed class DefaultSqsQueueHelper : ISqsQueueHelper
     }
 
     /// <inheritdoc/>
-    public async ValueTask<string> GetQueueUrlAsync(string queueName)
+    public virtual async ValueTask<string> GetQueueUrlAsync(string queueName)
     {
         if (queueUrlsCache.TryGetValue(queueName, out var queueUrl))
             return queueUrl;
@@ -63,7 +63,7 @@ internal sealed class DefaultSqsQueueHelper : ISqsQueueHelper
     }
 
     /// <inheritdoc/>
-    public async Task<long> GetQueueLengthAsync(string queueName, CancellationToken cancellationToken = default)
+    public virtual async Task<long> GetQueueLengthAsync(string queueName, CancellationToken cancellationToken = default)
     {
         var request = new GetQueueAttributesRequest
         {

@@ -4,7 +4,7 @@ namespace SQS.Extensions.OpenTelemetry.Metrics;
 
 internal static class Meters
 {
-    internal static readonly Meter SqsMeter = new("SQS.Extensions", "2.0.0");
+    private static readonly Meter SqsMeter = new("SQS.Extensions", "2.0.0");
 
     internal static readonly Counter<long> TotalProcessedSuccessfully = SqsMeter.CreateCounter<long>("sqs.extensions.messaging.successes", description: "Total number of messages processed successfully.");
 
