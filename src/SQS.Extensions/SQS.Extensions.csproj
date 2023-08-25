@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SQS" Version="3.7.200.22" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.200.26" />
     <PackageReference Include="System.Text.Json" Version="7.0.3" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />

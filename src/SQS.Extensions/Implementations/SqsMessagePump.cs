@@ -29,6 +29,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
     private readonly CancellationTokenSource messagePumpCancellationTokenSource = new();
     private readonly CancellationTokenSource messageProcessingCancellationTokenSource = new();
+    private TagList tagList;
     private readonly Task[] pumpTasks;
     private readonly int numberOfPumps;
     private readonly int numberOfMessagesToFetch;
@@ -62,6 +63,12 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         }
 
         pumpTasks = new Task[numberOfPumps];
+       tagList = new TagList(new KeyValuePair<string, object>[]
+            {
+                new(MeterTags.QueueName, configuration.QueueName),
+                new(MeterTags.MessageType, typeof(T))
+            }
+          .AsSpan()!);
     }
 
     internal async Task InitAsync(CancellationToken cancellationToken = default)
@@ -73,6 +80,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         {
             var queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
             await sqsService.PurgeQueueAsync(queueUrl, cancellationToken).ConfigureAwait(false);
+
             LogQueuePurge(logger, queueUrl);
         }
         catch (PurgeQueueInProgressException ex)
@@ -134,24 +142,17 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
         LogMessageReceived(logger, receivedMessages.Messages.Count, queueUrl);
 
-        var tags = new TagList(new KeyValuePair<string, object>[]
-            {
-                new(MeterTags.QueueUrl, queueUrl),
-                new(MeterTags.MessageType, typeof(T))
-            }
-            .AsSpan()!);
-
-        Meters.TotalFetched.Add(receivedMessages.Messages.Count, tags);
+        Meters.TotalFetched.Add(receivedMessages.Messages.Count, tagList);
 
 #if NET6_0_OR_GREATER
-        await Parallel.ForEachAsync(receivedMessages.Messages, cancellationToken, async (message, token) => await ProcessMessageAsync(processMessageAsync, message, tags, token).ConfigureAwait(false));
+        await Parallel.ForEachAsync(receivedMessages.Messages, cancellationToken, async (message, token) => await ProcessMessageAsync(processMessageAsync, message, token).ConfigureAwait(false));
 #else
         var tasks = new Task[receivedMessages.Messages.Count];
 
         for (var i = 0; i < receivedMessages.Messages.Count; i++)
         {
             var message = receivedMessages.Messages[i];
-            tasks[i] = ProcessMessageAsync(processMessageAsync, message, tags, cancellationToken);
+            tasks[i] = ProcessMessageAsync(processMessageAsync, message, cancellationToken);
         }
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -159,19 +160,19 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
     }
 
-    private async Task ProcessMessageAsync(Func<T?, CancellationToken, Task> processMessageAsync, Message message, TagList tags, CancellationToken cancellationToken)
+    private async Task ProcessMessageAsync(Func<T?, CancellationToken, Task> processMessageAsync, Message message, CancellationToken cancellationToken)
     {
-        if (!IsMessageExpired(message, tags))
+        if (!IsMessageExpired(message, tagList))
         {
             try
             {
                 await processMessageAsync(messageSerializer.Deserialize<T>(message.Body), messageProcessingCancellationTokenSource.Token).ConfigureAwait(false);
-                Meters.TotalProcessedSuccessfully.Add(1, tags);
+                Meters.TotalProcessedSuccessfully.Add(1, tagList);
             }
             catch (Exception ex)
             {
-                tags.Add(new KeyValuePair<string, object?>(MeterTags.FailureType, ex.GetType()));
-                Meters.TotalFailures.Add(1, tags);
+                tagList.Add(new KeyValuePair<string, object?>(MeterTags.FailureType, ex.GetType()));
+                Meters.TotalFailures.Add(1, tagList);
                 throw;
             }
         }
@@ -180,7 +181,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         // If processing failed, the onError handler will have moved the message
         // to a retry queue.
         await DeleteMessageAndBodyIfRequiredAsync(message, cancellationToken).ConfigureAwait(false);
-        Meters.TotalDeleted.Add(1, tags);
+        Meters.TotalDeleted.Add(1, tagList);
     }
 
     private async Task DeleteMessageAndBodyIfRequiredAsync(Message message, CancellationToken token)

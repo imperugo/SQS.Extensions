@@ -18,7 +18,7 @@ public abstract partial class SqsHostedService<T> : BackgroundService
     /// </summary>
     protected SqsHostedService(ILogger logger, ISqsMessagePumpFactory messagePumpFactory)
     {
-        this.Logger = logger;
+        Logger = logger;
         this.messagePumpFactory = messagePumpFactory;
     }
 
