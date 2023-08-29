@@ -37,10 +37,15 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public async Task QueueAsync<T>(T obj, string queueName, int delaySeconds = 0, CancellationToken cancellationToken = default)
+    public async Task QueueAsync<T>(T obj, string queueName, int delaySeconds = 0, Func<T, string>? serialize = null, CancellationToken cancellationToken = default)
     {
         var queueUrl = await sqsHelper.GetQueueUrlAsync(queueName);
-        var request = CreateSendMessageRequest(obj, queueUrl, delaySeconds);
+
+        var serializedObject = serialize != null
+            ? serialize(obj)
+            : messageSerializer.Serialize(obj);
+
+        var request = CreateSendMessageRequest(serializedObject, queueUrl, delaySeconds);
 
         LogPushingMessage(logger, queueName);
 
@@ -48,13 +53,19 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public async Task QueueBatchAsync<T>(IList<T> obj, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
+    public async Task QueueBatchAsync<T>(IList<T> obj, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, Func<T, string>? serialize = null, CancellationToken cancellationToken = default)
     {
         var requests = new SendMessageRequest[obj.Count];
         var queueUrl = await sqsHelper.GetQueueUrlAsync(queueName);
 
         for (var i = 0; i < obj.Count; i++)
-            requests[i] = CreateSendMessageRequest(obj[i], queueUrl, delaySeconds);
+        {
+            var serializedObject = serialize != null
+                ? serialize(obj[i])
+                : messageSerializer.Serialize(obj[i]);
+
+            requests[i] = CreateSendMessageRequest(serializedObject, queueUrl, delaySeconds);
+        }
 
         await QueueBatchAsync(requests, maxNumberOfMessagesForBatch, cancellationToken);
     }
@@ -118,12 +129,12 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
         }
     }
 
-    private SendMessageRequest CreateSendMessageRequest<T>(T obj, string queueName, int delaySeconds = 0)
+    private SendMessageRequest CreateSendMessageRequest(string serializedObject, string queueName, int delaySeconds = 0)
     {
         return new SendMessageRequest
         {
             QueueUrl = queueName,
-            MessageBody = messageSerializer.Serialize(obj),
+            MessageBody = serializedObject,
             DelaySeconds = delaySeconds
         };
     }
