@@ -3,7 +3,8 @@
   <Sdk Name="Microsoft.DotNet.PackageValidation" Version="1.0.0-preview.7.21379.12" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0;net7.0</TargetFrameworks>
+<!--    <TargetFrameworks>netstandard2.0;net6.0;net7.0</TargetFrameworks>-->
+    <TargetFramework>net7.0</TargetFramework>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageProjectUrl>https://github.com/imperugo/SQS.Extensions</PackageProjectUrl>
@@ -26,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SQS" Version="3.7.200.26" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.200.28" />
     <PackageReference Include="System.Text.Json" Version="7.0.3" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />

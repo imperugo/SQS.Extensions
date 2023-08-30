@@ -63,12 +63,12 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         }
 
         pumpTasks = new Task[numberOfPumps];
-       tagList = new TagList(new KeyValuePair<string, object>[]
+        tagList = new TagList(new KeyValuePair<string, object>[]
             {
                 new(MeterTags.QueueName, configuration.QueueName),
                 new(MeterTags.MessageType, typeof(T))
             }
-          .AsSpan()!);
+            .AsSpan()!);
     }
 
     internal async Task InitAsync(CancellationToken cancellationToken = default)
