@@ -139,7 +139,7 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
         };
     }
 
-    [LoggerMessage(EventId = 101, Level = LogLevel.Error, Message = "Pushing message into SQS Queue: {QueueName}")]
+    [LoggerMessage(EventId = 101, Level = LogLevel.Debug, Message = "Pushing message into SQS Queue: {QueueName}")]
     private static partial void LogPushingMessage(
         ILogger logger,
         string queueName);
