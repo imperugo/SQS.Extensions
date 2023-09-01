@@ -99,10 +99,10 @@ public sealed class MessageContext
     /// </summary>
     /// <param name="messageId">The SQS message identifier.</param>
     /// <param name="messageAttributes">The message attributes.</param>
-    public MessageContext(string messageId, Dictionary<string, string> messageAttributes)
+    public MessageContext(string messageId, Dictionary<string, string>? messageAttributes = null)
     {
         MessageId = messageId;
-        MessageAttributes = messageAttributes;
+        MessageAttributes = messageAttributes ?? new Dictionary<string, string>();
     }
 
     /// <summary>
@@ -122,4 +122,28 @@ public sealed class MessageContext
     /// </summary>
     /// <value>A dictionary containing the message attributes.</value>
     public Dictionary<string, string> MessageAttributes { get; set; }
+
+    /// <summary>
+    /// Get the value of a message attribute.
+    /// </summary>
+    /// <param name="key">The key of the dictionary.</param>
+    public string? GetAttribute(string key)
+    {
+        if (MessageAttributes.TryGetValue(key, out var value))
+            return value;
+
+        return null;
+    }
+
+    /// <summary>
+    /// Get the value of a message attribute as an integer.
+    /// </summary>
+    /// <param name="key">The key of the dictionary.</param>
+    public int? GetAttributeAsInt(string key)
+    {
+        if (MessageAttributes.TryGetValue(key, out var value))
+            return int.Parse(value);
+
+        return null;
+    }
 }
