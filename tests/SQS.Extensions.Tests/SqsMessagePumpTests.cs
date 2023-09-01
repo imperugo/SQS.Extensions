@@ -57,7 +57,7 @@ public class SqsMessagePumpTests : IAsyncDisposable, IDisposable
     {
         amazonSqsMock.ReceiveMessageAsync(Arg.Any<ReceiveMessageRequest>(), Arg.Any<CancellationToken>()).Returns(new ReceiveMessageResponse { Messages = new List<Message>(), HttpStatusCode = HttpStatusCode.OK });
 
-        await sut.PumpAsync((_, _) => Task.CompletedTask);
+        await sut.PumpAsync((_, _, _) => Task.CompletedTask);
 
         Func<ReceiveMessageRequest?, bool> equal = x => x is { MaxNumberOfMessages: 10, WaitTimeSeconds: 20, QueueUrl: Constants.DEFAULT_TEST_QUEUE_URL };
 

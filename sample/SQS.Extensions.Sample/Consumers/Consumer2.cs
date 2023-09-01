@@ -14,7 +14,7 @@ internal sealed class Consumer2 : SqsHostedService<MySqsMessage>
     {
     }
 
-    protected override Func<MySqsMessage?, CancellationToken, Task> ProcessMessageFunc => ConsumeMessageAsync;
+    protected override Func<MySqsMessage?, MessageContext, CancellationToken, Task> ProcessMessageFunc => ConsumeMessageAsync;
 
     protected override MessagePumpConfiguration MessagePumpConfiguration =>
         new (Constants.QUEUE_NAME_2)
@@ -30,7 +30,7 @@ internal sealed class Consumer2 : SqsHostedService<MySqsMessage>
             PurgeOnStartup = true
         };
 
-    private Task ConsumeMessageAsync(MySqsMessage? message, CancellationToken cancellationToken)
+    private Task ConsumeMessageAsync(MySqsMessage? message, MessageContext context, CancellationToken cancellationToken)
     {
         // Do your staff here
 

@@ -25,7 +25,7 @@ public abstract partial class SqsHostedService<T> : BackgroundService
     /// <summary>
     /// The function to call when a message has been caught from the queue.
     /// </summary>
-    protected abstract Func<T?, CancellationToken, Task> ProcessMessageFunc { get; }
+    protected abstract Func<T?, MessageContext, CancellationToken, Task> ProcessMessageFunc { get; }
 
     /// <summary>
     /// The pump configuration
@@ -87,4 +87,28 @@ public abstract partial class SqsHostedService<T> : BackgroundService
 
     [LoggerMessage(EventId = 103, Level = LogLevel.Critical, Message = "The Sqs Hosted Service is shutting down. Reason: {Message}")]
     private static partial void LogCriticalError(ILogger logger, string message, Exception exc);
+}
+
+/// <summary>
+/// Represents the context of a message.
+/// </summary>
+public sealed class MessageContext
+{
+    /// <summary>
+    /// Gets or sets the identifier of the message.
+    /// </summary>
+    /// <value>The message identifier.</value>
+    public required string MessageId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the retry count for the message.
+    /// </summary>
+    /// <value>The retry count for the message.</value>
+    public int? RetryCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the message attributes as key-value pairs.
+    /// </summary>
+    /// <value>A dictionary containing the message attributes.</value>
+    public required Dictionary<string, string> MessageAttributes { get; set; }
 }

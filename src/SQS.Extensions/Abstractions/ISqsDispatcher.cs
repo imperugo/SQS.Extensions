@@ -21,6 +21,7 @@ public interface ISqsDispatcher
     /// <param name="queueName">The name of the queue to enqueue the object to.</param>
     /// <param name="delaySeconds">The delay in seconds before processing the object from the queue (default: 0).</param>
     /// <param name="serialize">Optional delegate for custom serialization of the object into a string representation.</param>
+    /// <param name="messageAttributes">A set of attributes you can add to the sqs message.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation (default: default).</param>
     /// <returns>A task representing the asynchronous enqueue operation.</returns>
     /// <remarks>
@@ -30,7 +31,7 @@ public interface ISqsDispatcher
     /// You can also provide a delegate to customize serialization of the object
     /// into a string representation, if necessary.
     /// </remarks>
-    Task QueueAsync<T>(T obj, string queueName, int delaySeconds = 0, Func<T, string>? serialize = null, CancellationToken cancellationToken = default);
+    Task QueueAsync<T>(T obj, string queueName, int delaySeconds = 0, Dictionary<string, string>? messageAttributes = null, Func<T, string>? serialize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Queue a set of objects into the SQS queue
@@ -39,6 +40,7 @@ public interface ISqsDispatcher
     /// <param name="queueName">The name of the queue.</param>
     /// <param name="delaySeconds">The delay in seconds before to have the message visible into the queue.</param>
     /// <param name="maxNumberOfMessagesForBatch">The max number of messages to send with a single request.</param>
+    /// <param name="messageAttributes">A set of attributes you can add to the sqs message.</param>
     /// <param name="serialize">Optional delegate for custom serialization of the object into a string representation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <typeparam name="T">The type of the expected object.</typeparam>
@@ -47,7 +49,7 @@ public interface ISqsDispatcher
     ///     It will be sent immediately to th queue but saying to SQS to keep it hidden for the specified period.
     /// </remarks>
     /// <returns>The response from the SendMessage service method, as returned by SQS.</returns>
-    Task QueueBatchAsync<T>(IList<T> obj, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, Func<T, string>? serialize = null, CancellationToken cancellationToken = default);
+    Task QueueBatchAsync<T>(IList<T> obj, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, Dictionary<string, string>? messageAttributes = null, Func<T, string>? serialize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Queue an object into the SQS queue
