@@ -146,11 +146,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
         Func<Message, MessageContext> getContext = (message) =>
         {
-            var messageContext = new MessageContext()
-            {
-                MessageId = message.MessageId,
-                MessageAttributes = message.Attributes
-            };
+            var messageContext = new MessageContext(message.MessageId, message.Attributes);
 
             if (message.Attributes.TryGetValue("ApproximateReceiveCount", out var receiveCount))
                 messageContext.RetryCount = int.Parse(receiveCount);
@@ -170,6 +166,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         for (var i = 0; i < receivedMessages.Messages.Count; i++)
         {
             var message = receivedMessages.Messages[i];
+            var ctx = getContext(message);
             tasks[i] = ProcessMessageAsync(processMessageAsync, message, ctx, cancellationToken);
         }
 

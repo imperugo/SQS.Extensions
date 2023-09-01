@@ -119,6 +119,7 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
                     entry.Id = Guid.NewGuid().ToString("N");
                     entry.MessageBody = message.MessageBody;
                     entry.DelaySeconds = message.DelaySeconds;
+                    entry.MessageAttributes = message.MessageAttributes;
                     entries.Add(entry);
                 }
 
@@ -141,8 +142,8 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
 
         if(messageAttributes is not null)
         {
-            foreach (var (key, value) in messageAttributes)
-                req.MessageAttributes.Add(key, new MessageAttributeValue { DataType = "String", StringValue = value });
+            foreach (var item in messageAttributes)
+                req.MessageAttributes.Add(item.Key, new MessageAttributeValue { DataType = "String", StringValue = item.Value });
         }
 
         return req;

@@ -95,10 +95,21 @@ public abstract partial class SqsHostedService<T> : BackgroundService
 public sealed class MessageContext
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="MessageContext"/> class.
+    /// </summary>
+    /// <param name="messageId">The SQS message identifier.</param>
+    /// <param name="messageAttributes">The message attributes.</param>
+    public MessageContext(string messageId, Dictionary<string, string> messageAttributes)
+    {
+        MessageId = messageId;
+        MessageAttributes = messageAttributes;
+    }
+
+    /// <summary>
     /// Gets or sets the identifier of the message.
     /// </summary>
     /// <value>The message identifier.</value>
-    public required string MessageId { get; set; }
+    public string MessageId { get; set; }
 
     /// <summary>
     /// Gets or sets the retry count for the message.
@@ -110,5 +121,5 @@ public sealed class MessageContext
     /// Gets or sets the message attributes as key-value pairs.
     /// </summary>
     /// <value>A dictionary containing the message attributes.</value>
-    public required Dictionary<string, string> MessageAttributes { get; set; }
+    public Dictionary<string, string> MessageAttributes { get; set; }
 }
