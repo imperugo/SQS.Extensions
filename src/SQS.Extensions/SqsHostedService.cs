@@ -38,7 +38,7 @@ public abstract partial class SqsHostedService<T> : BackgroundService
     /// <value>
     ///   <c>true</c> if enabled; otherwise, <c>false</c>.
     /// </value>
-    protected virtual bool IsEnabled => true;
+    protected virtual Task<bool> IsEnabled => Task.FromResult(true);
 
     /// <inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -50,7 +50,7 @@ public abstract partial class SqsHostedService<T> : BackgroundService
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (IsEnabled)
+                if (await IsEnabled)
                 {
                     try
                     {
