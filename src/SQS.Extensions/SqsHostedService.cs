@@ -106,22 +106,22 @@ public sealed class MessageContext
     }
 
     /// <summary>
-    /// Gets or sets the identifier of the message.
+    /// Gets the identifier of the message.
     /// </summary>
     /// <value>The message identifier.</value>
-    public string MessageId { get; set; }
+    public string MessageId { get; }
 
     /// <summary>
     /// Gets or sets the retry count for the message.
     /// </summary>
     /// <value>The retry count for the message.</value>
-    public int? RetryCount { get; set; }
+    public int? RetryCount { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the message attributes as key-value pairs.
+    /// Gets the message attributes as key-value pairs.
     /// </summary>
     /// <value>A dictionary containing the message attributes.</value>
-    public Dictionary<string, string> MessageAttributes { get; set; }
+    public Dictionary<string, string> MessageAttributes { get; }
 
     /// <summary>
     /// Get the value of a message attribute.

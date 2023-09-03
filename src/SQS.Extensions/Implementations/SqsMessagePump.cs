@@ -30,6 +30,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     private readonly CancellationTokenSource messagePumpCancellationTokenSource = new();
     private readonly CancellationTokenSource messageProcessingCancellationTokenSource = new();
     private TagList tagList;
+    private string queueUrl = string.Empty;
     private readonly Task[] pumpTasks;
     private readonly int numberOfPumps;
     private readonly int numberOfMessagesToFetch;
@@ -63,6 +64,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         }
 
         pumpTasks = new Task[numberOfPumps];
+
         tagList = new TagList(new KeyValuePair<string, object>[]
             {
                 new(MeterTags.QueueName, configuration.QueueName),
@@ -73,12 +75,17 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
     internal async Task InitAsync(CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(queueUrl))
+        {
+            queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
+            LogPumpInitialized(logger, queueUrl, numberOfPumps, numberOfMessagesToFetch);
+        }
+
         if (!configuration.PurgeOnStartup)
             return;
 
         try
         {
-            var queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
             await sqsService.PurgeQueueAsync(queueUrl, cancellationToken).ConfigureAwait(false);
 
             LogQueuePurge(logger, queueUrl);
@@ -92,8 +99,6 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     /// <inheritdoc/>
     public async Task PumpAsync(Func<T?, MessageContext, CancellationToken, Task> processMessageAsync, CancellationToken cancellationToken = default)
     {
-        var queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
-
         var receiveMessagesRequest = new ReceiveMessageRequest
         {
             MaxNumberOfMessages = numberOfMessagesToFetch,
@@ -138,8 +143,6 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     {
         var receivedMessages = await sqsService.ReceiveMessageAsync(messageRequest, cancellationToken).ConfigureAwait(false);
 
-        var queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
-
         LogMessageReceived(logger, receivedMessages.Messages.Count, queueUrl);
 
         Meters.TotalFetched.Add(receivedMessages.Messages.Count, tagList);
@@ -175,7 +178,11 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
     }
 
-    private async Task ProcessMessageAsync(Func<T?, MessageContext, CancellationToken, Task> processMessageAsync, Message message, MessageContext context, CancellationToken cancellationToken)
+    private async Task ProcessMessageAsync(
+        Func<T?, MessageContext, CancellationToken, Task> processMessageAsync,
+        Message message,
+        MessageContext context,
+        CancellationToken cancellationToken)
     {
         if (!IsMessageExpired(message, tagList))
         {
@@ -199,11 +206,10 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         Meters.TotalDeleted.Add(1, tagList);
     }
 
-    private async Task DeleteMessageAndBodyIfRequiredAsync(Message message, CancellationToken token)
+    private async Task DeleteMessageAndBodyIfRequiredAsync(Message message,  CancellationToken token)
     {
         try
         {
-            var queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
             await sqsService.DeleteMessageAsync(queueUrl, message.ReceiptHandle, token).ConfigureAwait(false);
 
             LogMessageDeleted(logger, message.MessageId, queueUrl);
@@ -289,6 +295,13 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     private static partial void LogQueuePurge(
         ILogger logger,
         string queueUrl);
+
+    [LoggerMessage(EventId = 107, Level = LogLevel.Debug, Message = "Message Pump for queue: {QueueUrl} initialized. NumberOrPumps: {NumberOfPumps}, NumberOfMessagesToFetch: {NumberOfMessagesToFetch}")]
+    private static partial void LogPumpInitialized(
+        ILogger logger,
+        string queueUrl,
+        int numberOfPumps,
+        int numberOfMessagesToFetch);
 
     #endregion
 }
