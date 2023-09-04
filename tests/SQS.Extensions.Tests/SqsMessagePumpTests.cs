@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 
 using Amazon.SQS;
@@ -10,6 +11,8 @@ using SQS.Extensions.Implementations;
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
+
+using SQS.Extensions;
 
 namespace AWS.SDK.SQS.Extensions.Tests;
 
@@ -65,6 +68,37 @@ public class SqsMessagePumpTests : IAsyncDisposable, IDisposable
         await amazonSqsMock.Received(1).ReceiveMessageAsync(Arg.Is<ReceiveMessageRequest>(
             x => x != null && equal(x)
         ), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Calling_PumpAsync_With_60_Messages_Should_Call_Custom_Function_60_Times_Async()
+    {
+        var messages = new List<Message>();
+
+        // 10 is the max number of messages that SQS can return on a single request
+        for(var i = 0; i < 10; i++)
+            messages.Add(new Message());
+
+        var configuration = new MessagePumpConfiguration("my-super-queue")
+        {
+            MaxConcurrentOperation = 60
+        };
+        var scopedSut = new SqsMessagePump<string>(amazonSqsMock, loggerMock, configuration, sqsQueueHelperMock, messageSerializerMock);
+
+        amazonSqsMock.ReceiveMessageAsync(Arg.Any<ReceiveMessageRequest>(), Arg.Any<CancellationToken>()).Returns(new ReceiveMessageResponse { Messages = messages, HttpStatusCode = HttpStatusCode.OK });
+
+        var count = new ConcurrentBag<string>();
+
+        Func<string?, MessageContext, CancellationToken, Task> myFunc = (_, ctx, _) =>
+        {
+            count.Add(ctx.MessageId);
+            return Task.CompletedTask;
+        };
+
+        await scopedSut.InitAsync();
+        await scopedSut.PumpAsync(myFunc, CancellationToken.None);
+
+        Assert.Equal(60, count.Count);
     }
 
     //TODO: Verify expired message

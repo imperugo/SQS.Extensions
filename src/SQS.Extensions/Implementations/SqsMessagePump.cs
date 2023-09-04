@@ -77,7 +77,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
     {
         if (string.IsNullOrEmpty(queueUrl))
         {
-            queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName);
+            queueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName).ConfigureAwait(false);
             LogPumpInitialized(logger, queueUrl, numberOfPumps, numberOfMessagesToFetch);
         }
 
@@ -111,10 +111,14 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
             }
         };
 
+#if NET6_0_OR_GREATER
+        await Parallel.ForEachAsync(Enumerable.Range(0, numberOfPumps), cancellationToken, async (_, token) => await ConsumeMessagesAsync(processMessageAsync, receiveMessagesRequest, token).ConfigureAwait(false)).ConfigureAwait(false);
+#else
         for (var i = 0; i < numberOfPumps; i++)
             pumpTasks[i] = ConsumeMessagesAsync(processMessageAsync, receiveMessagesRequest, cancellationToken);
 
-        await Task.WhenAll(pumpTasks);
+        await Task.WhenAll(pumpTasks).ConfigureAwait(false);
+#endif
     }
 
     /// <inheritdoc/>
@@ -127,6 +131,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 #else
         using (cancellationToken.Register(() => messageProcessingCancellationTokenSource.Cancel()))
 #endif
+
             await Task.WhenAll(pumpTasks).ConfigureAwait(false);
 
         messagePumpCancellationTokenSource.Dispose();
@@ -139,6 +144,16 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         await StopPumpAsync().ConfigureAwait(false);
     }
 
+    private MessageContext GetContext(Message message)
+    {
+        var messageContext = new MessageContext(message.MessageId, message.MessageAttributes);
+
+        if (message.Attributes.TryGetValue(MessageSystemAttributeName.ApproximateReceiveCount, out var receiveCount))
+            messageContext.RetryCount = int.Parse(receiveCount);
+
+        return messageContext;
+    }
+
     private async Task ConsumeMessagesAsync(Func<T?, MessageContext, CancellationToken, Task> processMessageAsync, ReceiveMessageRequest messageRequest, CancellationToken cancellationToken)
     {
         var receivedMessages = await sqsService.ReceiveMessageAsync(messageRequest, cancellationToken).ConfigureAwait(false);
@@ -147,20 +162,10 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
 
         Meters.TotalFetched.Add(receivedMessages.Messages.Count, tagList);
 
-        Func<Message, MessageContext> getContext = (message) =>
-        {
-            var messageContext = new MessageContext(message.MessageId, message.Attributes);
-
-            if (message.Attributes.TryGetValue("ApproximateReceiveCount", out var receiveCount))
-                messageContext.RetryCount = int.Parse(receiveCount);
-
-            return messageContext;
-        };
-
 #if NET6_0_OR_GREATER
         await Parallel.ForEachAsync(receivedMessages.Messages, cancellationToken, async (message, token) =>
         {
-            var ctx = getContext(message);
+            var ctx = GetContext(message);
             await ProcessMessageAsync(processMessageAsync, message, ctx, token).ConfigureAwait(false);
         });
 #else
@@ -169,7 +174,7 @@ internal sealed partial class SqsMessagePump<T> : ISqsMessagePump<T>, IAsyncDisp
         for (var i = 0; i < receivedMessages.Messages.Count; i++)
         {
             var message = receivedMessages.Messages[i];
-            var ctx = getContext(message);
+            var ctx = GetContext(message);
             tasks[i] = ProcessMessageAsync(processMessageAsync, message, ctx, cancellationToken);
         }
 
