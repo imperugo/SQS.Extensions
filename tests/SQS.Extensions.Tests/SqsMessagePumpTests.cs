@@ -11,6 +11,7 @@ using SQS.Extensions.Implementations;
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
+using NSubstitute.ReceivedExtensions;
 
 using SQS.Extensions;
 
@@ -76,29 +77,37 @@ public class SqsMessagePumpTests : IAsyncDisposable, IDisposable
         var messages = new List<Message>();
 
         // 10 is the max number of messages that SQS can return on a single request
-        for(var i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
             messages.Add(new Message());
 
         var configuration = new MessagePumpConfiguration("my-super-queue")
         {
             MaxConcurrentOperation = 60
         };
+
+        amazonSqsMock
+            .ReceiveMessageAsync(Arg.Any<ReceiveMessageRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new ReceiveMessageResponse { Messages = messages, HttpStatusCode = HttpStatusCode.OK });
+
         var scopedSut = new SqsMessagePump<string>(amazonSqsMock, loggerMock, configuration, sqsQueueHelperMock, messageSerializerMock);
 
-        amazonSqsMock.ReceiveMessageAsync(Arg.Any<ReceiveMessageRequest>(), Arg.Any<CancellationToken>()).Returns(new ReceiveMessageResponse { Messages = messages, HttpStatusCode = HttpStatusCode.OK });
+        var customFunctionMock = Substitute.For<Func<string?, MessageContext, CancellationToken, Task>>();
 
-        var count = new ConcurrentBag<string>();
+        customFunctionMock
+            .When(x => x.Invoke(Arg.Any<string>(), Arg.Any<MessageContext>(), Arg.Any<CancellationToken>()));
 
-        Func<string?, MessageContext, CancellationToken, Task> myFunc = (_, ctx, _) =>
-        {
-            count.Add(ctx.MessageId);
-            return Task.CompletedTask;
-        };
-
+        // Act
         await scopedSut.InitAsync();
-        await scopedSut.PumpAsync(myFunc, CancellationToken.None);
+        await scopedSut.PumpAsync(customFunctionMock, CancellationToken.None);
 
-        Assert.Equal(60, count.Count);
+        // Assert
+        await amazonSqsMock
+            .Received(6)
+            .ReceiveMessageAsync(Arg.Any<ReceiveMessageRequest>(), Arg.Any<CancellationToken>());
+
+        await customFunctionMock
+            .Received(60)
+            .Invoke(Arg.Any<string>(), Arg.Any<MessageContext>(), Arg.Any<CancellationToken>());
     }
 
     //TODO: Verify expired message
