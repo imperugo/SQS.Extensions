@@ -4,19 +4,19 @@ using Microsoft.Extensions.Logging;
 using SQS.Extensions.Abstractions;
 using SQS.Extensions.Configurations;
 
-namespace SQS.Extensions;
+namespace SQS.Extensions.HostedServices;
 
 /// <summary>
 /// The base implementation of SQS Consumer
 /// </summary>
-public abstract partial class SqsHostedService<T> : BackgroundService
+public abstract partial class BulkSqsHostedService<TMessage> : BackgroundService where TMessage: notnull
 {
     private readonly ISqsMessagePumpFactory messagePumpFactory;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SqsHostedService{T}"/> class.
+    /// Initializes a new instance of the <see cref="HostedServices.SqsHostedService{T}"/> class.
     /// </summary>
-    protected SqsHostedService(ILogger logger, ISqsMessagePumpFactory messagePumpFactory)
+    protected BulkSqsHostedService(ILogger logger, ISqsMessagePumpFactory messagePumpFactory)
     {
         Logger = logger;
         this.messagePumpFactory = messagePumpFactory;
@@ -25,7 +25,7 @@ public abstract partial class SqsHostedService<T> : BackgroundService
     /// <summary>
     /// The function to call when a message has been caught from the queue.
     /// </summary>
-    protected abstract Func<T?, MessageContext, CancellationToken, Task> ProcessMessageFunc { get; }
+    protected abstract Func<Dictionary<TMessage, MessageContext>, CancellationToken, Task> ProcessMessagesFunc { get; }
 
     /// <summary>
     /// The pump configuration
@@ -46,7 +46,7 @@ public abstract partial class SqsHostedService<T> : BackgroundService
         try
         {
             LogHostServiceStarted(Logger, GetType().Name);
-            var pump = await messagePumpFactory.CreateAsync<T>(MessagePumpConfiguration, cancellationToken);
+            var pump = await messagePumpFactory.CreateBulkMessagePumpAsync<TMessage>(MessagePumpConfiguration, cancellationToken);
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -54,7 +54,7 @@ public abstract partial class SqsHostedService<T> : BackgroundService
                 {
                     try
                     {
-                        await pump.PumpAsync(ProcessMessageFunc, cancellationToken);
+                        await pump.PumpAsync(ProcessMessagesFunc, cancellationToken);
                     }
                     catch (Exception e)
                     {

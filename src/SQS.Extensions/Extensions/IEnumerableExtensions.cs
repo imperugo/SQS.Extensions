@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace SQS.Extensions.Extensions;
 
 internal static class IEnumerableExtensions

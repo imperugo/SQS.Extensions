@@ -12,6 +12,14 @@ public interface ISqsMessagePumpFactory
     /// </summary>
     /// <param name="configuration">The pump configuration</param>
     /// <param name="cancellationToken">The cancellation token</param>
-    /// <typeparam name="T">The type to use during the message deserialization</typeparam>
-    Task<ISqsMessagePump<T>> CreateAsync<T>(MessagePumpConfiguration configuration, CancellationToken cancellationToken);
+    /// <typeparam name="TMessage">The type to use during the message deserialization</typeparam>
+    Task<ISqsMessagePump<TMessage>> CreateMessagePumpAsync<TMessage>(MessagePumpConfiguration configuration, CancellationToken cancellationToken) where TMessage : notnull;
+
+    /// <summary>
+    /// Create a new instance of bulk message pump with automatic deserialization
+    /// </summary>
+    /// <param name="configuration">The pump configuration</param>
+    /// <param name="cancellationToken">The cancellation token</param>
+    /// <typeparam name="TMessage">The type to use during the message deserialization</typeparam>
+    Task<ISqsBulkMessagePump<TMessage>> CreateBulkMessagePumpAsync<TMessage>(MessagePumpConfiguration configuration, CancellationToken cancellationToken) where TMessage : notnull;
 }

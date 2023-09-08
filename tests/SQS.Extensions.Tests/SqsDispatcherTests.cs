@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization.Metadata;
-
 using Amazon.SQS;
 using Amazon.SQS.Model;
 

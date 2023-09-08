@@ -1,11 +1,10 @@
 using Amazon.SQS;
 using Amazon.SQS.Model;
 
-using SQS.Extensions.Extensions;
-
 using Microsoft.Extensions.Logging;
 
 using SQS.Extensions.Abstractions;
+using SQS.Extensions.Extensions;
 
 namespace SQS.Extensions.Implementations;
 

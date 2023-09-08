@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Net;
 
 using Amazon.SQS;
@@ -6,14 +5,13 @@ using Amazon.SQS.Model;
 
 using SQS.Extensions.Abstractions;
 using SQS.Extensions.Configurations;
-using SQS.Extensions.Implementations;
 
 using Microsoft.Extensions.Logging;
 
 using NSubstitute;
-using NSubstitute.ReceivedExtensions;
 
 using SQS.Extensions;
+using SQS.Extensions.Implementations.MessagePump;
 
 namespace AWS.SDK.SQS.Extensions.Tests;
 
@@ -26,7 +24,7 @@ public class SqsMessagePumpTests : IAsyncDisposable, IDisposable
     private readonly IMessageSerializer messageSerializerMock;
     private readonly MessagePumpConfiguration configuration;
 
-    private readonly SqsMessagePump<string> sut;
+    private readonly SingleMessagePump<string> sut;
 
     public SqsMessagePumpTests()
     {
@@ -43,7 +41,7 @@ public class SqsMessagePumpTests : IAsyncDisposable, IDisposable
             .GetQueueUrlAsync(Arg.Any<string>())
             .Returns(Constants.DEFAULT_TEST_QUEUE_URL);
 
-        sut = new SqsMessagePump<string>(amazonSqsMock, loggerMock, configuration, sqsQueueHelperMock, messageSerializerMock);
+        sut = new SingleMessagePump<string>(amazonSqsMock, loggerMock, configuration, sqsQueueHelperMock, messageSerializerMock);
     }
 
     [Fact]
@@ -89,7 +87,7 @@ public class SqsMessagePumpTests : IAsyncDisposable, IDisposable
             .ReceiveMessageAsync(Arg.Any<ReceiveMessageRequest>(), Arg.Any<CancellationToken>())
             .Returns(new ReceiveMessageResponse { Messages = messages, HttpStatusCode = HttpStatusCode.OK });
 
-        var scopedSut = new SqsMessagePump<string>(amazonSqsMock, loggerMock, configuration, sqsQueueHelperMock, messageSerializerMock);
+        var scopedSut = new SingleMessagePump<string>(amazonSqsMock, loggerMock, configuration, sqsQueueHelperMock, messageSerializerMock);
 
         var customFunctionMock = Substitute.For<Func<string?, MessageContext, CancellationToken, Task>>();
 

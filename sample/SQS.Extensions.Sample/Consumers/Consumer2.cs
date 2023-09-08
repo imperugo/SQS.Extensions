@@ -2,6 +2,7 @@
 
 using SQS.Extensions.Abstractions;
 using SQS.Extensions.Configurations;
+using SQS.Extensions.HostedServices;
 
 namespace SQS.Extensions.Sample.Consumers;
 

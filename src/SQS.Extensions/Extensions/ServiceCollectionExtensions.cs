@@ -6,6 +6,8 @@ using SQS.Extensions.Implementations;
 
 using Microsoft.Extensions.Hosting;
 
+using SQS.Extensions.Implementations.MessagePump;
+
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
@@ -79,6 +81,6 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IMessageSerializer, TSerializer>();
 
         serviceCollection.AddSingleton<ISqsDispatcher, SqsDispatcher>();
-        serviceCollection.AddSingleton<ISqsMessagePumpFactory, SqsSqsMessagePumpFactory>();
+        serviceCollection.AddSingleton<ISqsMessagePumpFactory, MessagePumpFactory>();
     }
 }
