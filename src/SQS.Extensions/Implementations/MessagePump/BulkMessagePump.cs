@@ -32,6 +32,7 @@ internal class BulkMessagePump<TMessage>
             MaxNumberOfMessages = NUMBER_OF_MESSAGES_TO_FETCH,
             QueueUrl = QueueUrl,
             WaitTimeSeconds = 20,
+            MessageAttributeNames = new List<string>{ "All" },
             AttributeNames = new List<string>
             {
                 "SentTimestamp",
