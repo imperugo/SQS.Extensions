@@ -52,18 +52,24 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
     }
 
     /// <inheritdoc/>
-    public async Task QueueBatchAsync<T>(IList<T> obj, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, Dictionary<string, string>? messageAttributes = null, Func<T, string>? serialize = null, CancellationToken cancellationToken = default)
+    public async Task QueueBatchAsync<T>(IEnumerable<T> messages, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, Dictionary<string, string>? messageAttributes = null, Func<T, string>? serialize = null, CancellationToken cancellationToken = default)
     {
-        var requests = new SendMessageRequest[obj.Count];
+        // Why 8 ... dunno, I like the number :)
+        var numberOfItems = messages is ICollection<T> collection
+            ? collection.Count
+            : 8;
+
+        var requests = new List<SendMessageRequest>(numberOfItems);
+
         var queueUrl = await sqsHelper.GetQueueUrlAsync(queueName);
 
-        for (var i = 0; i < obj.Count; i++)
+        foreach (var msg in messages)
         {
             var serializedObject = serialize != null
-                ? serialize(obj[i])
-                : messageSerializer.Serialize(obj[i]);
+                ? serialize(msg)
+                : messageSerializer.Serialize(msg);
 
-            requests[i] = CreateSendMessageRequest(serializedObject, queueUrl, delaySeconds, messageAttributes);
+            requests.Add(CreateSendMessageRequest(serializedObject, queueUrl, delaySeconds, messageAttributes));
         }
 
         await QueueBatchAsync(requests, maxNumberOfMessagesForBatch, cancellationToken);
@@ -106,7 +112,7 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
             })
                 .ConfigureAwait(false);
 #else
-            var tasks = new List<Task>(requests.Count/ maxNumberOfMessagesForBatch);
+            var tasks = new List<Task>(requests.Count / maxNumberOfMessagesForBatch);
 
             foreach (var messages in group.ToList().Split(maxNumberOfMessagesForBatch))
             {

@@ -49,7 +49,7 @@ public interface ISqsDispatcher
     ///     It will be sent immediately to th queue but saying to SQS to keep it hidden for the specified period.
     /// </remarks>
     /// <returns>The response from the SendMessage service method, as returned by SQS.</returns>
-    Task QueueBatchAsync<T>(IList<T> obj, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, Dictionary<string, string>? messageAttributes = null, Func<T, string>? serialize = null, CancellationToken cancellationToken = default);
+    Task QueueBatchAsync<T>(IEnumerable<T> obj, string queueName, int delaySeconds = 0, int maxNumberOfMessagesForBatch = 10, Dictionary<string, string>? messageAttributes = null, Func<T, string>? serialize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Queue an object into the SQS queue
