@@ -29,4 +29,29 @@ public sealed class MessageContext
     /// </summary>
     /// <value>The retry count for the message.</value>
     public int? RetryCount { get; internal set; }
+
+    /// <summary>
+    /// Get the value of a message attribute.
+    /// </summary>
+    /// <param name="key">The key of the dictionary.</param>
+    public string? GetAttributeAsString(string key)
+    {
+        if (Message.MessageAttributes.TryGetValue(key, out var value))
+            return value.StringValue;
+
+        return null;
+    }
+
+    /// <summary>
+    /// Get the value of a message attribute as an integer.
+    /// </summary>
+    /// <param name="key">The key of the dictionary.</param>
+    /// <param name="defaultValue">The default value to return</param>
+    public int? GetAttributeAsInt(string key, int? defaultValue = null)
+    {
+        if (Message.MessageAttributes.TryGetValue(key, out var value))
+            return int.Parse(value.StringValue);
+
+        return defaultValue;
+    }
 }
