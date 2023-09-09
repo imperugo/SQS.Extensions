@@ -59,6 +59,9 @@ internal class BulkMessagePump<TMessage>
 
         LogMessageReceived(Logger, receivedMessages.Messages.Count, QueueUrl);
 
+        if(receivedMessages.Messages.Count == 0)
+            return;
+
         Meters.TotalFetched.Add(receivedMessages.Messages.Count, TagList);
         await ProcessMessagesAsync(processMessagesAsync, receivedMessages.Messages, cancellationToken).ConfigureAwait(false);
     }
