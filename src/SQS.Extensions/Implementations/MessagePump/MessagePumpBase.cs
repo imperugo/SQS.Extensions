@@ -109,7 +109,7 @@ internal abstract partial class MessagePumpBase<TMessage> :
 
     protected MessageContext GetContext(Message message)
     {
-        var messageContext = new MessageContext(message.MessageId, message.MessageAttributes);
+        var messageContext = new MessageContext(message.MessageId, message.Attributes);
 
         if (message.Attributes.TryGetValue(MessageSystemAttributeName.ApproximateReceiveCount, out var receiveCount))
             messageContext.RetryCount = int.Parse(receiveCount);

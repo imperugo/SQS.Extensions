@@ -14,7 +14,7 @@ public sealed class MessageContext
     /// </summary>
     /// <param name="messageId">The SQS message identifier.</param>
     /// <param name="messageAttributes">The message attributes.</param>
-    public MessageContext(string messageId, Dictionary<string, MessageAttributeValue> messageAttributes)
+    public MessageContext(string messageId, Dictionary<string, string> messageAttributes)
     {
         MessageId = messageId;
         MessageAttributes = messageAttributes;
@@ -36,7 +36,7 @@ public sealed class MessageContext
     /// Gets the message attributes as key-value pairs.
     /// </summary>
     /// <value>A dictionary containing the message attributes.</value>
-    public Dictionary<string, MessageAttributeValue> MessageAttributes { get; }
+    public Dictionary<string, string> MessageAttributes { get; }
 
     /// <summary>
     /// Get the value of a message attribute.
@@ -45,7 +45,7 @@ public sealed class MessageContext
     public string? GetAttributeAsString(string key)
     {
         if (MessageAttributes.TryGetValue(key, out var value))
-            return value.StringValue;
+            return value;
 
         return null;
     }
@@ -57,7 +57,7 @@ public sealed class MessageContext
     public int? GetAttributeAsInt(string key)
     {
         if (MessageAttributes.TryGetValue(key, out var value))
-            return int.Parse(value.StringValue);
+            return int.Parse(value);
 
         return null;
     }
