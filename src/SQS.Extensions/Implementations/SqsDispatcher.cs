@@ -87,6 +87,12 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
     /// <inheritdoc/>
     public async Task QueueBatchAsync(IList<SendMessageRequest> requests, int maxNumberOfMessagesForBatch = 10, CancellationToken cancellationToken = default)
     {
+        if (requests.Count == 0)
+        {
+            logger.LogWarning("There are no messages to send");
+            return;
+        }
+
         // Li gruppo per coda
         foreach (var group in requests.GroupBy(x => x.QueueUrl))
         {
