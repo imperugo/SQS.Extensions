@@ -29,7 +29,7 @@ internal sealed class SingleMessagePump<TMessage>
     {
         var receiveMessagesRequest = new ReceiveMessageRequest
         {
-            MaxNumberOfMessages = NUMBER_OF_MESSAGES_TO_FETCH,
+            MaxNumberOfMessages = NumberOfMessagesToFetch,
             QueueUrl = QueueUrl,
             WaitTimeSeconds = 20,
             AttributeNames = new List<string>

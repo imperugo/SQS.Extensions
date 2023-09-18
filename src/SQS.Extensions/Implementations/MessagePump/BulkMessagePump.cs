@@ -29,7 +29,7 @@ internal class BulkMessagePump<TMessage>
     {
         var receiveMessagesRequest = new ReceiveMessageRequest
         {
-            MaxNumberOfMessages = NUMBER_OF_MESSAGES_TO_FETCH,
+            MaxNumberOfMessages = NumberOfMessagesToFetch,
             QueueUrl = QueueUrl,
             WaitTimeSeconds = 20,
             MessageAttributeNames = new List<string>{ "All" },

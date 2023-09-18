@@ -29,12 +29,12 @@ internal abstract partial class MessagePumpBase<TMessage> :
     protected readonly CancellationTokenSource MessageProcessingCancellationTokenSource = new();
 
     protected TagList TagList;
+    protected readonly Task[] PumpTasks;
     protected readonly ILogger Logger;
     protected readonly int NumberOfPumps;
-    protected readonly Task[] PumpTasks;
     protected readonly IAmazonSQS SqsService;
     protected string QueueUrl = string.Empty;
-    protected const int NUMBER_OF_MESSAGES_TO_FETCH = 10;
+    protected readonly int NumberOfMessagesToFetch;
     protected IMessageSerializer MessageSerializer { get; }
 
     /// <summary>
@@ -53,8 +53,17 @@ internal abstract partial class MessagePumpBase<TMessage> :
         this.queueHelper = queueHelper;
         this.MessageSerializer = messageSerializer;
 
-        // 10 is a limit of SQS reason why I've to scale with the pump
-        NumberOfPumps = Convert.ToInt32(Math.Ceiling(Convert.ToDouble(configuration.MaxConcurrentOperation) / NUMBER_OF_MESSAGES_TO_FETCH));
+        if (configuration.MaxConcurrentOperation <= 10)
+        {
+            NumberOfPumps = 1;
+            NumberOfMessagesToFetch = configuration.MaxConcurrentOperation;
+        }
+        else
+        {
+            // 10 is a limit of SQS reason why I've to scale with the pump
+            NumberOfMessagesToFetch = 10;
+            NumberOfPumps = Convert.ToInt32(Math.Ceiling(Convert.ToDouble(configuration.MaxConcurrentOperation) / NumberOfMessagesToFetch));
+        }
 
         PumpTasks = new Task[NumberOfPumps];
 
@@ -72,7 +81,7 @@ internal abstract partial class MessagePumpBase<TMessage> :
         if (string.IsNullOrEmpty(QueueUrl))
         {
             QueueUrl = await queueHelper.GetQueueUrlAsync(configuration.QueueName).ConfigureAwait(false);
-            LogPumpInitialized(Logger, QueueUrl, NumberOfPumps, NUMBER_OF_MESSAGES_TO_FETCH);
+            LogPumpInitialized(Logger, QueueUrl, NumberOfPumps, NumberOfMessagesToFetch);
         }
 
         if (!configuration.PurgeOnStartup)
