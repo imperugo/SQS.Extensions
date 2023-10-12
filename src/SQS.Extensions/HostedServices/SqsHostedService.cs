@@ -9,7 +9,7 @@ namespace SQS.Extensions.HostedServices;
 /// <summary>
 /// The base implementation of SQS Consumer
 /// </summary>
-public abstract partial class SqsHostedService<TMessage> : BackgroundService where TMessage: notnull
+public abstract partial class SqsHostedService<TMessage> : BackgroundService where TMessage : notnull
 {
     private readonly ISqsMessagePumpFactory messagePumpFactory;
 
@@ -50,16 +50,14 @@ public abstract partial class SqsHostedService<TMessage> : BackgroundService whe
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (await IsEnabledAsync(cancellationToken))
+                try
                 {
-                    try
-                    {
+                    if (await IsEnabledAsync(cancellationToken))
                         await pump.PumpAsync(ProcessMessageFunc, cancellationToken);
-                    }
-                    catch (Exception e)
-                    {
-                        LogPumpError(Logger, e);
-                    }
+                }
+                catch (Exception e)
+                {
+                    LogPumpError(Logger, e);
                 }
 
                 await Task.Delay(MessagePumpConfiguration.BatchDelay, cancellationToken);
@@ -77,7 +75,7 @@ public abstract partial class SqsHostedService<TMessage> : BackgroundService whe
     /// <value>
     /// The logger used for logging in the current class.
     /// </value>
-    protected ILogger Logger { get ; }
+    protected ILogger Logger { get; }
 
     [LoggerMessage(EventId = 101, Level = LogLevel.Information, Message = "Sqs Hosted Service: {HostServiceName} is starting")]
     private static partial void LogHostServiceStarted(ILogger logger, string hostServiceName);
