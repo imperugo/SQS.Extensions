@@ -1,6 +1,8 @@
 using System.Text.Json;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using SQS.Extensions.Abstractions;
 using SQS.Extensions.Serialization.Json;
@@ -18,10 +20,10 @@ public sealed partial class SystemTextJsonSerializer : IMessageSerializer
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemTextJsonSerializer"/> class.
     /// </summary>
-    public SystemTextJsonSerializer(ILogger<SystemTextJsonSerializer> logger, JsonSerializerOptions? defaultSerializer)
+    public SystemTextJsonSerializer(ILogger<SystemTextJsonSerializer> logger, IServiceProvider serviceProvider)
     {
         this.logger = logger;
-        this.defaultSerializer = defaultSerializer ?? SerializationOptions.Default;
+        this.defaultSerializer = serviceProvider.GetService<JsonSerializerOptions>() ?? SerializationOptions.Default;
     }
 
     /// <inheritdoc/>
