@@ -90,7 +90,7 @@ internal class BulkMessagePump<TMessage>
         }
         catch (Exception ex)
         {
-            TagList.Add(new KeyValuePair<string, object?>(MeterTags.FailureType, ex.GetType()));
+            TagList.Add(new KeyValuePair<string, object?>(MeterTags.FAILURE_TYPE, ex.GetType()));
             Meters.TotalFailures.Add(messagesToBeParsed.Count, TagList);
             throw;
         }

@@ -69,8 +69,8 @@ internal abstract partial class MessagePumpBase<TMessage> :
 
         TagList = new TagList(new KeyValuePair<string, object>[]
             {
-                new(MeterTags.QueueName, configuration.QueueName),
-                new(MeterTags.MessageType, typeof(TMessage))
+                new(MeterTags.QUEUE_NAME, configuration.QueueName),
+                new(MeterTags.MESSAGE_TYPE, typeof(TMessage))
             }
             .AsSpan()!);
     }
@@ -146,7 +146,7 @@ internal abstract partial class MessagePumpBase<TMessage> :
         // Message has expired.
         LogExpiredMessage(Logger, message.MessageId, utcNow - expiresAt, expiresAt);
 
-        TagList.Add(new KeyValuePair<string, object?>(MeterTags.FailureType, "Message Expired."));
+        TagList.Add(new KeyValuePair<string, object?>(MeterTags.FAILURE_TYPE, "Message Expired."));
         Meters.TotalExpired.Add(1, TagList);
 
         return true;

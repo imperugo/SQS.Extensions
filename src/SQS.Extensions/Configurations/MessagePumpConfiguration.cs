@@ -11,6 +11,9 @@ public sealed record MessagePumpConfiguration
     /// <param name="queueName">The name of the SQS queue</param>
     public MessagePumpConfiguration(string queueName)
     {
+        if(string.IsNullOrEmpty(queueName))
+            throw new ArgumentException("Invalid queue name", nameof(queueName));
+
         QueueName = queueName;
     }
 

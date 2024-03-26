@@ -20,10 +20,11 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="serviceCollection"></param>
     /// <typeparam name="TConsumerTask"></typeparam>
-    public static void AddSqsConsumer<TConsumerTask>(this IServiceCollection serviceCollection)
+    /// <param name="lifetime">The <see cref="T:Microsoft.Extensions.DependencyInjection.ServiceLifetime" /> of the service.</param>
+    public static void AddSqsConsumer<TConsumerTask>(this IServiceCollection serviceCollection, ServiceLifetime lifetime = ServiceLifetime.Transient)
         where TConsumerTask : class, IHostedService
     {
-        serviceCollection.AddHostedService<TConsumerTask>();
+        serviceCollection.Add(new ServiceDescriptor(typeof(IHostedService), typeof(TConsumerTask), lifetime));
     }
 
     /// <summary>
