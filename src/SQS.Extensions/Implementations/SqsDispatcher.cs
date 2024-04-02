@@ -99,7 +99,7 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
             var queueUrl = group.First().QueueUrl;
 
             // Li gruppo per 10 che è il massimo numero di messaggi che si possono inviare in una singola richiesta
-#if NET6_0 || NET7_0
+#if NET6_0 || NET7_0 || NET8_0
             await Parallel.ForEachAsync(group.Chunk(maxNumberOfMessagesForBatch), cancellationToken, async (messages, token) =>
             {
                 var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessagesForBatch);
