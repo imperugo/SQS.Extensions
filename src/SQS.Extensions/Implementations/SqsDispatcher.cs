@@ -102,17 +102,10 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
 #if NET6_0 || NET7_0 || NET8_0
             await Parallel.ForEachAsync(group.Chunk(maxNumberOfMessagesForBatch), cancellationToken, async (messages, token) =>
             {
-                var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessagesForBatch);
+                var entries = new List<SendMessageBatchRequestEntry>(messages.Length);
 
                 foreach (var message in messages)
-                {
-                    var entry = new SendMessageBatchRequestEntry();
-                    entry.Id = Guid.NewGuid().ToString("N");
-                    entry.MessageBody = message.MessageBody;
-                    entry.DelaySeconds = message.DelaySeconds;
-                    entry.MessageAttributes = message.MessageAttributes;
-                    entries.Add(entry);
-                }
+                    GetMessageEntry(message, entries);
 
                 await SqsClient.SendMessageBatchAsync(queueUrl, entries, token).ConfigureAwait(false);
             })
@@ -125,20 +118,23 @@ internal sealed partial class SqsDispatcher : ISqsDispatcher
                 var entries = new List<SendMessageBatchRequestEntry>(maxNumberOfMessagesForBatch);
 
                 foreach (var message in messages)
-                {
-                    var entry = new SendMessageBatchRequestEntry();
-                    entry.Id = Guid.NewGuid().ToString("N");
-                    entry.MessageBody = message.MessageBody;
-                    entry.DelaySeconds = message.DelaySeconds;
-                    entry.MessageAttributes = message.MessageAttributes;
-                    entries.Add(entry);
-                }
+                    GetMessageEntry(message, entries);
 
                 tasks.Add(SqsClient.SendMessageBatchAsync(queueUrl, entries, cancellationToken));
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 #endif
+        }
+
+        void GetMessageEntry(SendMessageRequest message, List<SendMessageBatchRequestEntry> entries)
+        {
+            var entry = new SendMessageBatchRequestEntry();
+            entry.Id = Guid.NewGuid().ToString("N");
+            entry.MessageBody = message.MessageBody;
+            entry.DelaySeconds = message.DelaySeconds;
+            entry.MessageAttributes = message.MessageAttributes;
+            entries.Add(entry);
         }
     }
 
