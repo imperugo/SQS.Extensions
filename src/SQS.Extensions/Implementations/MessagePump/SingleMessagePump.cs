@@ -32,12 +32,7 @@ internal sealed class SingleMessagePump<TMessage>
             MaxNumberOfMessages = NumberOfMessagesToFetch,
             QueueUrl = QueueUrl,
             WaitTimeSeconds = 20,
-            MessageAttributeNames = new List<string>{ "All" },
-            AttributeNames = new List<string>
-            {
-                "SentTimestamp",
-                "MessageTTL"
-            }
+            MessageAttributeNames = new List<string>{ "All" }
         };
 
 #if NET6_0_OR_GREATER

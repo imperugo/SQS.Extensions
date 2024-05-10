@@ -21,23 +21,19 @@ internal class BulkMessagePump<TMessage>
         MessagePumpConfiguration configuration,
         ISqsQueueHelper queueHelper,
         IMessageSerializer messageSerializer)
-            : base(sqsService, logger, configuration, queueHelper, messageSerializer)
+        : base(sqsService, logger, configuration, queueHelper, messageSerializer)
     {
     }
 
-    public async Task PumpAsync(Func<Dictionary<TMessage, MessageContext>, CancellationToken, Task> processMessageAsync, CancellationToken cancellationToken = default)
+    public async Task PumpAsync(Func<Dictionary<TMessage, MessageContext>, CancellationToken, Task> processMessageAsync,
+        CancellationToken cancellationToken = default)
     {
         var receiveMessagesRequest = new ReceiveMessageRequest
         {
             MaxNumberOfMessages = NumberOfMessagesToFetch,
             QueueUrl = QueueUrl,
             WaitTimeSeconds = 20,
-            MessageAttributeNames = new List<string>{ "All" },
-            AttributeNames = new List<string>
-            {
-                "SentTimestamp",
-                "MessageTTL"
-            }
+            MessageAttributeNames = new List<string> { "All" }
         };
 
 #if NET6_0_OR_GREATER
@@ -60,11 +56,12 @@ internal class BulkMessagePump<TMessage>
 
         LogMessageReceived(Logger, receivedMessages.Messages.Count, QueueUrl);
 
-        if(receivedMessages.Messages.Count == 0)
+        if (receivedMessages.Messages.Count == 0)
             return;
 
         Meters.TotalFetched.Add(receivedMessages.Messages.Count, TagList);
-        await ProcessMessagesAsync(processMessagesAsync, receivedMessages.Messages, cancellationToken).ConfigureAwait(false);
+        await ProcessMessagesAsync(processMessagesAsync, receivedMessages.Messages, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task ProcessMessagesAsync(
@@ -86,7 +83,8 @@ internal class BulkMessagePump<TMessage>
 
         try
         {
-            await processMessageAsync(messagesToBeParsed, MessageProcessingCancellationTokenSource.Token).ConfigureAwait(false);
+            await processMessageAsync(messagesToBeParsed, MessageProcessingCancellationTokenSource.Token)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -102,18 +100,12 @@ internal class BulkMessagePump<TMessage>
         Meters.TotalDeleted.Add(messages.Count, TagList);
     }
 
-    private async Task DeleteMessageAndBodyIfRequiredAsync(IList<Message> messages,  CancellationToken token)
+    private async Task DeleteMessageAndBodyIfRequiredAsync(IList<Message> messages, CancellationToken token)
     {
         var entries = new List<DeleteMessageBatchRequestEntry>();
 
         foreach (var msg in messages)
-        {
-            entries.Add(new DeleteMessageBatchRequestEntry()
-            {
-                Id = msg.MessageId,
-                ReceiptHandle = msg.ReceiptHandle
-            });
-        }
+            entries.Add(new DeleteMessageBatchRequestEntry { Id = msg.MessageId, ReceiptHandle = msg.ReceiptHandle });
 
         await SqsService.DeleteMessageBatchAsync(QueueUrl, entries, token).ConfigureAwait(false);
 
