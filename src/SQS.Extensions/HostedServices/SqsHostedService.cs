@@ -46,7 +46,8 @@ public abstract partial class SqsHostedService<TMessage> : BackgroundService whe
         try
         {
             LogHostServiceStarted(Logger, GetType().Name);
-            var pump = await messagePumpFactory.CreateMessagePumpAsync<TMessage>(MessagePumpConfiguration, cancellationToken);
+            var pump = await messagePumpFactory.CreateMessagePumpAsync<TMessage>(MessagePumpConfiguration,
+                cancellationToken);
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -62,6 +63,10 @@ public abstract partial class SqsHostedService<TMessage> : BackgroundService whe
 
                 await Task.Delay(MessagePumpConfiguration.BatchDelay, cancellationToken);
             }
+        }
+        catch (TaskCanceledException)
+        {
+            LogShutDown(Logger);
         }
         catch (Exception e)
         {
@@ -83,6 +88,9 @@ public abstract partial class SqsHostedService<TMessage> : BackgroundService whe
     [LoggerMessage(EventId = 102, Level = LogLevel.Error, Message = "[MessagePump] There is an error while processing messages")]
     private static partial void LogPumpError(ILogger logger, Exception exc);
 
-    [LoggerMessage(EventId = 103, Level = LogLevel.Critical, Message = "The Sqs Hosted Service is shutting down. Reason: {Message}")]
+    [LoggerMessage(EventId = 103, Level = LogLevel.Critical, Message = "The Sqs Hosted Service has got an error. Reason: {Message}")]
     private static partial void LogCriticalError(ILogger logger, string message, Exception exc);
+
+    [LoggerMessage(EventId = 104, Level = LogLevel.Debug, Message = "The Sqs Hosted Service is shutting down. Reason: {Message}")]
+    private static partial void LogShutDown(ILogger logger);
 }
