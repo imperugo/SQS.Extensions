@@ -91,6 +91,6 @@ public abstract partial class SqsHostedService<TMessage> : BackgroundService whe
     [LoggerMessage(EventId = 103, Level = LogLevel.Critical, Message = "The Sqs Hosted Service has got an error. Reason: {Message}")]
     private static partial void LogCriticalError(ILogger logger, string message, Exception exc);
 
-    [LoggerMessage(EventId = 104, Level = LogLevel.Debug, Message = "The Sqs Hosted Service is shutting down. Reason: {Message}")]
+    [LoggerMessage(EventId = 104, Level = LogLevel.Debug, Message = "The Sqs Hosted Service is shutting down")]
     private static partial void LogShutDown(ILogger logger);
 }
